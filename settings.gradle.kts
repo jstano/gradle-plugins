@@ -1,39 +1,35 @@
 import com.github.burrunan.s3cache.AwsS3BuildCache
+import com.stano.gradle_dependency_management.MavenRepositoryUtil
 
 rootProject.name = "gradle-plugins"
 
 buildscript {
-  val extraProps = getExtensions().extraProperties.properties
+  val properties = getExtensions().extraProperties.properties
+  val stanoMavenUrl = properties["com.stano.maven.url"]?.toString() ?: System.getenv("STANO_MAVEN_URL")
+  val stanoMavenUsername = properties["com.stano.maven.username"]?.toString() ?: System.getenv("STANO_MAVEN_USERNAME")
+  val stanoMavenPassword = properties["com.stano.maven.password"]?.toString() ?: System.getenv("STANO_MAVEN_PASSWORD")
 
-  repositories {
-    mavenLocal()
-    mavenCentral()
-    gradlePluginPortal()
-  }
-  dependencies {
-//    classpath("com.r365:gradle-dependency-management:${extraProps["gradleDependencyManagementVersion"].toString()}")
-    classpath("org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:${extraProps["sonarPluginVersion"]}")
-    classpath("com.github.burrunan.s3-build-cache:com.github.burrunan.s3-build-cache.gradle.plugin:1.9.5")
-  }
-}
-
-val extraProps = getExtensions().extraProperties.properties
-
-dependencyResolutionManagement {
   repositories {
     mavenLocal()
     mavenCentral()
     gradlePluginPortal()
     maven {
       name = "stano-maven"
-      url = uri(extraProps["com.stano.maven.url"]?.toString() ?: System.getenv("STANO_MAVEN_URL") ?: "")
-      credentials(PasswordCredentials::class) {
-        username = extraProps["com.stano.maven.username"]?.toString() ?: System.getenv("STANO_MAVEN_USERNAME")
-        password = extraProps["com.stano.maven.password"]?.toString() ?: System.getenv("STANO_MAVEN_PASSWORD")
+      url = uri(stanoMavenUrl)
+      credentials {
+        username = stanoMavenUsername
+        password = stanoMavenPassword
       }
     }
   }
+  dependencies {
+    classpath("com.stano:gradle-dependency-management:${properties["gradleDependencyManagementVersion"].toString()}")
+    classpath("org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:${properties["sonarPluginVersion"]}")
+    classpath("com.github.burrunan.s3-build-cache:com.github.burrunan.s3-build-cache.gradle.plugin:1.9.5")
+  }
 }
+
+MavenRepositoryUtil.configureDependencyResolutionManagement(extensions, dependencyResolutionManagement)
 
 include("gradle-plugins-application")
 include("gradle-plugins-bom")

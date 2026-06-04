@@ -16,7 +16,7 @@ class SonarPlugin implements Plugin<Project> {
     final var sonarEnabled = !GradleProperties.booleanProperty(project, "com.stano.sonar.disabled");
     final var sonarHostUrl = GradleProperties.getProperty(project, "com.stano.sonar.host");
     final var sonarToken = GradleProperties.getProperty(project, "com.stano.sonar.token");
-    final var sonarFailBuildEnabled = GradleProperties.booleanProperty(project, "com.stano.sonar.failBuildEnabled");
+    final var sonarFailBuildEnabled = GradleProperties.booleanProperty(project, "com.stano.sonar.fail-build-enabled");
 
     if (sonarEnabled && sonarHostUrl != null && sonarToken != null) {
       final var sonarProjectName = getSonarProjectName(project);

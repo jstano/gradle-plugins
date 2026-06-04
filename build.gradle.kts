@@ -1,5 +1,4 @@
-import com.stano.buildlogic.MavenRepositoryUtil
-import com.stano.buildlogic.fullDependency
+import com.stano.gradle_dependency_management.MavenRepositoryUtil
 
 plugins {
   id("org.sonarqube")
@@ -11,17 +10,20 @@ plugins {
 
 sonar {
   val extraProperties = extensions.extraProperties.properties
-  val stanoSonarHost = extraProperties["com.stano.sonar.host.url"]?.toString() ?: System.getenv("STANO_SONAR_HOST_URL")
-  val stanoSonarToken = extraProperties["com.stano.sonar.token"]?.toString() ?: System.getenv("STANO_SONAR_TOKEN")
+  val sonarHost = extraProperties["com.stano.sonar.host.url"]?.toString() ?: System.getenv("STANO_SONAR_HOST_URL")
+  val sonarToken = extraProperties["com.stano.sonar.token"]?.toString() ?: System.getenv("STANO_SONAR_TOKEN")
 
   properties {
-    property("sonar.host.url", stanoSonarHost)
-    property("sonar.token", stanoSonarToken)
+    property("sonar.host.url", sonarHost)
+    property("sonar.token", sonarToken)
     property("sonar.projectName", "gradle-plugins")
     property("sonar.projectKey", "${project.group}:gradle-plugins")
     property("sonar.projectVersion", project.version)
   }
 }
+
+val antDep = libs.ant
+val junitPlatformLauncherDep = libs.junit.platform.launcher
 
 subprojects {
   val properties = extensions.extraProperties.properties
@@ -37,9 +39,9 @@ subprojects {
 
   dependencies {
     implementation("org.codehaus.groovy:groovy-all:${properties["groovyVersion"]}")
-    implementation(fullDependency("org.apache.ant:ant"))
+    implementation(antDep)
     implementation(gradleApi())
-    testRuntimeOnly(fullDependency("org.junit.platform:junit-platform-launcher"))
+    testRuntimeOnly(junitPlatformLauncherDep)
   }
 
   MavenRepositoryUtil.configurePublishing(this)

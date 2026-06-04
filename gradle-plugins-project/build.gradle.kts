@@ -1,9 +1,7 @@
-import com.stano.buildlogic.fullDependency
-
 dependencies {
   implementation(project(":gradle-plugins-util"))
 
-  implementation(fullDependency("org.owasp:dependency-check-gradle"))
+  implementation(libs.owasp.dependency.check)
 
   testImplementation(project(":gradle-plugins-test"))
 }

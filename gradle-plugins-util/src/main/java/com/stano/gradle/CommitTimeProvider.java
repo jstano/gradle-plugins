@@ -11,43 +11,33 @@ import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import java.util.TimeZone;
 
 public class CommitTimeProvider {
+  private final Project project;
 
-   private final Project project;
+  public CommitTimeProvider(Project project) {
+    this.project = project;
+  }
 
-   public CommitTimeProvider(Project project) {
+  @Override
+  public String toString() {
+    try (Git git = Git.open(project.getRootDir())) {
+      Ref head = git.getRepository().getRefDatabase().findRef("HEAD");
 
-      this.project = project;
-   }
+      if (head != null && head.getObjectId() != null) {
+        RevCommit commit = new RevWalk(git.getRepository()).parseCommit(head.getObjectId());
+        PersonIdent authorIdent = commit.getAuthorIdent();
+        Instant authorDate = authorIdent.getWhenAsInstant();
+        TimeZone authorTimeZone = TimeZone.getTimeZone(authorIdent.getZoneId());
+        LocalDateTime commitTime = LocalDateTime.ofInstant(authorDate, authorTimeZone.toZoneId());
 
-   @Override
-   public String toString() {
-
-      try (Git git = Git.open(project.getRootDir())) {
-         Ref head = git.getRepository().getRefDatabase().findRef("HEAD");
-
-         if (head != null && head.getObjectId() != null) {
-            RevCommit commit = new RevWalk(git.getRepository()).parseCommit(head.getObjectId());
-            PersonIdent authorIdent = commit.getAuthorIdent();
-            Date authorDate = authorIdent.getWhen();
-            TimeZone authorTimeZone = authorIdent.getTimeZone();
-            LocalDateTime commitTime = javaDateToLocalDateTime(authorDate, authorTimeZone);
-
-            return commitTime.format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
-         }
+        return commitTime.format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
       }
-      catch (IOException ignored) {
-      }
+    }
+    catch (IOException ignored) {
+    }
 
-      return null;
-   }
-
-   private LocalDateTime javaDateToLocalDateTime(Date date, TimeZone timeZone) {
-
-      Instant instant = Instant.ofEpochMilli(date.getTime());
-      return LocalDateTime.ofInstant(instant, timeZone.toZoneId());
-   }
+    return null;
+  }
 }

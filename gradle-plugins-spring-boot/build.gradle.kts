@@ -1,5 +1,3 @@
-import com.stano.buildlogic.fullDependency
-
 dependencies {
   implementation(project(":gradle-plugins-util"))
 
@@ -7,5 +5,5 @@ dependencies {
   testImplementation(project(":gradle-plugins-project"))
   testImplementation(project(":gradle-plugins-test"))
 
-  testImplementation(fullDependency("org.springframework.boot:org.springframework.boot.gradle.plugin"))
+  testImplementation(libs.spring.boot.plugin)
 }

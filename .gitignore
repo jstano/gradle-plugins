@@ -5,6 +5,7 @@
 *.iws
 *.log
 .gradle
+bin
 build
 out
 !.gitkeep

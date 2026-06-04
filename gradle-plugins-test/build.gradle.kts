@@ -1,11 +1,8 @@
-import com.stano.buildlogic.fullDependency
-
 dependencies {
   api(project(":gradle-plugins-util"))
 
-  api(fullDependency("net.bytebuddy:byte-buddy"))
-  api(fullDependency("org.codehaus.groovy:groovy-all"))
-  api(fullDependency("org.junit.jupiter:junit-jupiter"))
-  api(fullDependency("org.junit.platform:junit-platform-launcher"))
-  api(fullDependency("org.spockframework:spock-core"))
+  api(libs.byte.buddy)
+  api("org.codehaus.groovy:groovy-all:${libs.versions.groovy.get()}")
+  api(libs.bundles.junit)
+  api(libs.spock.core)
 }
