@@ -7,7 +7,7 @@ dependencies {
   implementation(project(":gradle-plugins-project"))
   implementation(project(":gradle-plugins-settings"))
   implementation(project(":gradle-plugins-sonar"))
-//  implementation(project(":gradle-plugins-spring-boot"))
+  implementation(project(":gradle-plugins-spring-boot"))
 
   testImplementation(project(":gradle-plugins-test"))
 }

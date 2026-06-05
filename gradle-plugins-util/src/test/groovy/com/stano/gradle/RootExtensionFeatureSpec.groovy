@@ -5,21 +5,21 @@ import org.gradle.api.plugins.ExtensionContainer
 import spock.lang.Specification
 
 class RootExtensionFeatureSpec extends Specification {
-   def "verify we can apply the r365 extension"() {
+   def "verify we can apply the root extension"() {
       def rootDir = File.createTempDir()
       def extensionsMap = [:]
       def extensions = Mock(ExtensionContainer) {
-         add("r365", _) >> { args ->
+         add("root", _) >> { args ->
             extensionsMap.put(args[0], args[1])
          }
-         findByName("r365") >> { args ->
+         findByName("root") >> { args ->
             return extensionsMap.get(args[0])
          }
       }
       // https://gitlab.com/api/v4/projects/66116551/packages/maven
       def projectPropertiesMap = [
          "javaPlatformVersion": "1.2.3",
-         "pactBrokerUrl": "https://pact.r365.com",
+         "pactBrokerUrl": "https://pact.stano.com",
          "pactBrokerUsername": "pact-username",
          "pactBrokerPassword": "pact-password"
       ]
@@ -34,30 +34,30 @@ class RootExtensionFeatureSpec extends Specification {
          }
          getRootDir() >> rootDir
       }
-      def r365ExtensionFeature = new RootExtensionFeature()
-      r365ExtensionFeature.apply(project)
+      def rootExtensionFeature = new RootExtensionFeature()
+      rootExtensionFeature.apply(project)
 
-      def r365Extension = extensionsMap.get("r365") as RootExtension
+      def rootExtension = extensionsMap.get("root") as RootExtension
 
       expect:
-      r365Extension.javaPlatformVersion == "1.2.3"
-      r365Extension.pactBrokerUrl == "https://pact.r365.com"
-      r365Extension.pactBrokerUsername == "pact-username"
-      r365Extension.pactBrokerPassword == "pact-password"
-      r365Extension.javaVersion == "21"
+      rootExtension.javaPlatformVersion == "1.2.3"
+      rootExtension.pactBrokerUrl == "https://pact.stano.com"
+      rootExtension.pactBrokerUsername == "pact-username"
+      rootExtension.pactBrokerPassword == "pact-password"
+      rootExtension.javaVersion == "21"
 
       cleanup:
       rootDir.delete()
    }
 
-   def "the R365Extension should default the javaVersion to 21"() {
+   def "the RootExtension should default the javaVersion to 21"() {
       def rootDir = File.createTempDir()
       def extensionsMap = [:]
       def extensions = Mock(ExtensionContainer) {
-         add("r365", _) >> { args ->
+         add("root", _) >> { args ->
             extensionsMap.put(args[0], args[1])
          }
-         findByName("r365") >> { args ->
+         findByName("root") >> { args ->
             return extensionsMap.get(args[0])
          }
       }
@@ -73,32 +73,32 @@ class RootExtensionFeatureSpec extends Specification {
          getProperties() >> projectPropertiesMap
          getRootDir() >> rootDir
       }
-      def r365ExtensionFeature = new RootExtensionFeature()
-      r365ExtensionFeature.apply(project)
+      def rootExtensionFeature = new RootExtensionFeature()
+      rootExtensionFeature.apply(project)
 
-      def r365Extension = extensionsMap.get("r365") as RootExtension
+      def rootExtension = extensionsMap.get("root") as RootExtension
 
       expect:
-      r365Extension.javaVersion == "21"
+      rootExtension.javaVersion == "21"
 
       cleanup:
       rootDir.delete()
    }
 
-   def "the R365Extension should pick up the javaVersion from the project properties"() {
+   def "the RootExtension should pick up the javaVersion from the project properties"() {
 
       def rootDir = File.createTempDir()
       def extensionsMap = [:]
       def extensions = Mock(ExtensionContainer) {
-         add("r365", _) >> { args ->
+         add("root", _) >> { args ->
             extensionsMap.put(args[0], args[1])
          }
-         findByName("r365") >> { args ->
+         findByName("root") >> { args ->
             return extensionsMap.get(args[0])
          }
       }
       def projectPropertiesMap = [
-         "javaVersion": "17"
+         "javaVersion": "25"
       ]
       def project = Mock(Project) {
          getExtensions() >> extensions
@@ -111,13 +111,13 @@ class RootExtensionFeatureSpec extends Specification {
          getProperties() >> projectPropertiesMap
          getRootDir() >> rootDir
       }
-      def r365ExtensionFeature = new RootExtensionFeature()
-      r365ExtensionFeature.apply(project)
+      def rootExtensionFeature = new RootExtensionFeature()
+      rootExtensionFeature.apply(project)
 
-      def r365Extension = extensionsMap.get("r365") as RootExtension
+      def rootExtension = extensionsMap.get("root") as RootExtension
 
       expect:
-      r365Extension.javaVersion == "17"
+      rootExtension.javaVersion == "25"
 
       cleanup:
       rootDir.delete()

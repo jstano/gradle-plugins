@@ -8,17 +8,18 @@ import spock.lang.Ignore
 @Ignore
 class JavaLibraryPluginSpec extends BasePluginSpec {
    def setup() {
-      System.setProperty('com.r365.maven.url', 'https://gitlab.com/api/v4/projects/66116551/packages/maven')
-      System.setProperty('com.r365.maven.private-token', 'abc123')
-      System.setProperty('com.r365.sonar.host.url', 'http://localhost:9000')
-      System.setProperty('com.r365.sonar.login', 'sonar')
+      System.setProperty('com.stano.maven.url', 'https://maven.stano.com')
+      System.setProperty('com.stano.maven.username', 'abc123')
+     System.setProperty('com.stano.maven.password', 'xyz987')
+      System.setProperty('com.stano.sonar.host.url', 'http://localhost:9000')
+      System.setProperty('com.stano.sonar.login', 'sonar')
 
-      childProject.apply plugin: 'r365-java-library'
+      childProject.apply plugin: 'stano-java-library'
    }
 
    def "verify that the common plugins are applied"() {
       expect:
-      childProject.plugins.hasPlugin('r365-java-module')
+      childProject.plugins.hasPlugin('stano-java-module')
       childProject.plugins.hasPlugin('java-library')
       childProject.plugins.hasPlugin('jacoco')
       childProject.plugins.hasPlugin('maven-publish')
@@ -56,10 +57,10 @@ class JavaLibraryPluginSpec extends BasePluginSpec {
 
       childProject.publishing.repositories.size() == 1
 
-      childProject.publishing.repositories[0].name == 'libs-release-local'
-      childProject.publishing.repositories[0].url.toString() == 'https://artifactory.r365.com/artifactory/libs-release-local'
-      childProject.publishing.repositories[0].credentials.username == 'MAVEN_USERNAME'
-      childProject.publishing.repositories[0].credentials.password == 'MAVEN_PASSWORD'
+      childProject.publishing.repositories[0].name == 'stano-maven'
+      childProject.publishing.repositories[0].url.toString() == 'https://maven.stano.com'
+      childProject.publishing.repositories[0].credentials.username == 'abc123'
+      childProject.publishing.repositories[0].credentials.password == 'xyz987'
    }
 
    private boolean hasExcludes(CopySpecInternal spec) {

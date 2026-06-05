@@ -2,7 +2,7 @@ package com.stano.gradle.docker;
 
 import com.stano.gradle.GradlePluginUtil;
 import com.stano.gradle.PluginFeature;
-import com.stano.gradle.R365Extension;
+import com.stano.gradle.RootExtension;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.tasks.Exec;
@@ -19,12 +19,12 @@ public class ConfigureTasks implements PluginFeature {
   @Override
   public void apply(Project project) {
     final var dockerRegistrySettings = new DockerRegistrySettings(project);
-    final var r365Extension = project.getExtensions().getByType(R365Extension.class);
+    final var rootExtension = project.getExtensions().getByType(RootExtension.class);
 
     DockerRemoveImagesExtension dockerRemoveImagesExtension = project.getExtensions()
                                                                      .create("dockerRemoveImages", DockerRemoveImagesExtension.class);
 
-    configureDockerDefaults(project, dockerRegistrySettings, r365Extension);
+    configureDockerDefaults(project, dockerRegistrySettings, rootExtension);
 
     project.afterEvaluate(p -> {
       Task loginTask = createDockerLoginTask(p, dockerRegistrySettings);
@@ -151,56 +151,56 @@ public class ConfigureTasks implements PluginFeature {
                                        }).get();
   }
 
-  private void configureDockerDefaults(Project project, DockerRegistrySettings dockerRegistrySettings, R365Extension r365Extension) {
+  private void configureDockerDefaults(Project project, DockerRegistrySettings dockerRegistrySettings, RootExtension rootExtension) {
     DockerExtension dockerExtension = project.getExtensions().getByType(DockerExtension.class);
-    dockerExtension.labels(getStandardLabels(project, r365Extension));
+    dockerExtension.labels(getStandardLabels(project, rootExtension));
 
-    boolean hasSpringBootPlugin = project.getPlugins().hasPlugin("com.r365.spring-boot");
+    boolean hasSpringBootPlugin = project.getPlugins().hasPlugin("com.stano.spring-boot");
 
     if (hasSpringBootPlugin) {
-      String contextName = r365Extension.getContextName();
+      String contextName = rootExtension.getContextName();
       dockerExtension.setName(String.format("%s/%s/%s/%s:%s",
                                             dockerRegistrySettings.getHost(),
-                                            r365Extension.getRepositoryOrganizationProvider().toString(),
+                                            rootExtension.getRepositoryOrganizationProvider().toString(),
                                             contextName.toLowerCase(),
-                                            r365Extension.getBranchNameProvider().toString().toLowerCase(),
+                                            rootExtension.getBranchNameProvider().toString().toLowerCase(),
                                             project.getVersion()));
 
       Task dockerDependencyTask = project.getTasks().getByName("bootWar");
       dockerExtension.files(dockerDependencyTask.getOutputs());
-      dockerExtension.buildArgs(getStandardBuildArgs(project, contextName, dockerRegistrySettings, r365Extension));
+      dockerExtension.buildArgs(getStandardBuildArgs(project, contextName, dockerRegistrySettings, rootExtension));
     }
   }
 
-  private Map<String, String> getStandardLabels(Project project, R365Extension r365Extension) {
+  private Map<String, String> getStandardLabels(Project project, RootExtension rootExtension) {
     Map<String, String> labels = new HashMap<>();
-    labels.put("com.r365.build-hostname", GradlePluginUtil.getHostName());
-    labels.put("com.r365.build-username", System.getProperty("user.name"));
+    labels.put("com.stano.build-hostname", GradlePluginUtil.getHostName());
+    labels.put("com.stano.build-username", System.getProperty("user.name"));
 
-    String repositoryUrl = r365Extension.getRepositoryUrlProvider().toString();
-    String branchName = r365Extension.getBranchNameProvider().toString();
-    String buildNumber = r365Extension.getBuildNumber();
-    String commitHash = r365Extension.getCommitHashProvider().toString();
-    String commitTime = r365Extension.getCommitTimeProvider().toString();
+    String repositoryUrl = rootExtension.getRepositoryUrlProvider().toString();
+    String branchName = rootExtension.getBranchNameProvider().toString();
+    String buildNumber = rootExtension.getBuildNumber();
+    String commitHash = rootExtension.getCommitHashProvider().toString();
+    String commitTime = rootExtension.getCommitTimeProvider().toString();
 
     if (repositoryUrl != null) {
-      labels.put("com.r365.repository-url", repositoryUrl);
+      labels.put("com.stano.repository-url", repositoryUrl);
     }
 
     if (branchName != null) {
-      labels.put("com.r365.branch", branchName);
+      labels.put("com.stano.branch", branchName);
     }
 
     if (buildNumber != null) {
-      labels.put("com.r365.build-number", buildNumber);
+      labels.put("com.stano.build-number", buildNumber);
     }
 
     if (commitHash != null) {
-      labels.put("com.r365.commit-hash", commitHash);
+      labels.put("com.stano.commit-hash", commitHash);
     }
 
     if (commitTime != null) {
-      labels.put("com.r365.commit-time", commitTime);
+      labels.put("com.stano.commit-time", commitTime);
     }
 
     return labels;
@@ -209,15 +209,15 @@ public class ConfigureTasks implements PluginFeature {
   private Map<String, String> getStandardBuildArgs(Project project,
                                                    String contextName,
                                                    DockerRegistrySettings dockerRegistrySettings,
-                                                   R365Extension r365Extension) {
+                                                   RootExtension rootExtension) {
 
     Map<String, String> buildArgs = new HashMap<>();
     buildArgs.put("DOCKER_REGISTRY", dockerRegistrySettings.getHost());
     buildArgs.put("PROJECT_VERSION", project.getVersion().toString());
     buildArgs.put("CONTEXT_NAME", contextName);
 
-    if (r365Extension.getBuildNumber() != null) {
-      buildArgs.put("BUILD_NUMBER", r365Extension.getBuildNumber());
+    if (rootExtension.getBuildNumber() != null) {
+      buildArgs.put("BUILD_NUMBER", rootExtension.getBuildNumber());
     }
 
     return buildArgs;

@@ -43,67 +43,67 @@ public class BuildCache {
   }
 
   private boolean localBuildCacheEnabled(Map<String, Object> extraProperties) {
-    return Boolean.parseBoolean(extraProperties.getOrDefault("com.r365.build-cache.local.enabled", "true").toString());
+    return Boolean.parseBoolean(extraProperties.getOrDefault("com.stano.build-cache.local.enabled", "true").toString());
   }
 
   private String getBuildCacheType(Map<String, Object> extraProperties) {
-    final var buildCacheType = System.getenv("R365_BUILD_CACHE_TYPE");
+    final var buildCacheType = System.getenv("STANO_BUILD_CACHE_TYPE");
 
     if (buildCacheType != null) {
       return buildCacheType;
     }
 
-    return extraProperties.getOrDefault("com.r365.build-cache.type", "s3").toString();
+    return extraProperties.getOrDefault("com.stano.build-cache.type", "s3").toString();
   }
 
   private String getS3Bucket(Map<String, Object> extraProperties) {
-    final var s3Bucket = System.getenv("R365_BUILD_CACHE_S3_BUCKET");
+    final var s3Bucket = System.getenv("STANO_BUILD_CACHE_S3_BUCKET");
 
     if (s3Bucket != null) {
       return s3Bucket;
     }
 
-    return extraProperties.get("com.r365.build-cache.s3.bucket").toString();
+    return extraProperties.get("com.stano.build-cache.s3.bucket").toString();
   }
 
   private String getS3Region(Map<String, Object> extraProperties) {
-    final var s3Region = System.getenv("R365_BUILD_CACHE_S3_REGION");
+    final var s3Region = System.getenv("STANO_BUILD_CACHE_S3_REGION");
 
     if (s3Region != null) {
       return s3Region;
     }
 
-    return extraProperties.get("com.r365.build-cache.s3.region").toString();
+    return extraProperties.get("com.stano.build-cache.s3.region").toString();
   }
 
   private String getAccessKeyId(Map<String, Object> extraProperties) {
-    final var accessKeyId = System.getenv("R365_BUILD_CACHE_S3_ACCESS_KEY_ID");
+    final var accessKeyId = System.getenv("STANO_BUILD_CACHE_S3_ACCESS_KEY_ID");
 
     if (accessKeyId != null) {
       return accessKeyId;
     }
 
-    return extraProperties.get("com.r365.build-cache.s3.access-key-id").toString();
+    return extraProperties.get("com.stano.build-cache.s3.access-key-id").toString();
   }
 
   private String getSecretAccessKey(Map<String, Object> extraProperties) {
-    final var secretAccessKey = System.getenv("R365_BUILD_CACHE_S3_SECRET_ACCESS_KEY");
+    final var secretAccessKey = System.getenv("STANO_BUILD_CACHE_S3_SECRET_ACCESS_KEY");
 
     if (secretAccessKey != null) {
       return secretAccessKey;
     }
 
-    return extraProperties.get("com.r365.build-cache.s3.secret-access-key").toString();
+    return extraProperties.get("com.stano.build-cache.s3.secret-access-key").toString();
   }
 
   private boolean getPushEnabled(Map<String, Object> extraProperties) {
-    final var pushEnabled = System.getenv("R365_BUILD_CACHE_PUSH_ENABLED");
+    final var pushEnabled = System.getenv("STANO_BUILD_CACHE_PUSH_ENABLED");
 
     if (pushEnabled != null) {
       return Boolean.parseBoolean(pushEnabled);
     }
 
-    return Boolean.parseBoolean(extraProperties.getOrDefault("com.r365.build-cache.push-enabled", "false").toString());
+    return Boolean.parseBoolean(extraProperties.getOrDefault("com.stano.build-cache.push-enabled", "false").toString());
   }
 
   private String getBuildCachePrefix(Settings settings) {

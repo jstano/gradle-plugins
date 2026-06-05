@@ -33,7 +33,7 @@ MavenRepositoryUtil.configureDependencyResolutionManagement(extensions, dependen
 
 include("gradle-plugins-application")
 include("gradle-plugins-bom")
-//include("gradle-plugins-docker")
+include("gradle-plugins-docker")
 include("gradle-plugins-java-common")
 include("gradle-plugins-java-library")
 include("gradle-plugins-java-module")
@@ -43,7 +43,7 @@ include("gradle-plugins-java-module")
 include("gradle-plugins-project")
 include("gradle-plugins-settings")
 include("gradle-plugins-sonar")
-//include("gradle-plugins-spring-boot")
+include("gradle-plugins-spring-boot")
 include("gradle-plugins-test")
 include("gradle-plugins-util")
 

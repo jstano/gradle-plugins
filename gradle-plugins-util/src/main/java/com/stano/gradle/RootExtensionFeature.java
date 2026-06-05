@@ -20,7 +20,7 @@ import java.time.ZoneId;
  * CI_COMMIT_TIMESTAMP
  */
 public class RootExtensionFeature implements PluginFeature {
-   private static final String R365_EXTENSION_NAME = "r365";
+   private static final String ROOT_EXTENSION_NAME = "root";
    private static final String JAVA_PLATFORM_VERSION = "javaPlatformVersion";
    private static final String PACT_BROKER_URL = "pactBrokerUrl";
    private static final String PACT_BROKER_USERNAME = "pactBrokerUsername";
@@ -31,15 +31,15 @@ public class RootExtensionFeature implements PluginFeature {
    private static final String DOCKER_REGISTRY_PASSWORD = "dockerRegistryPassword";
    private static final String DOCKER_REGISTRY_AWS_PROFILE = "dockerRegistryAwsProfile";
    private static final String JAVA_VERSION = "javaVersion";
-   private static final String DEFAULT_NODE_VERSION = "com.r365.default-node-version";
-   private static final String USE_NVM = "com.r365.use-nvm";
+   private static final String DEFAULT_NODE_VERSION = "com.stano.default-node-version";
+   private static final String USE_NVM = "com.stano.use-nvm";
    private static final String CONTEXT_NAME = "contextName";
    private static final String USE_SEM_VER = "useSemVer";
    private static final String DEFAULT_JAVA_VERSION = "21";
 
    @Override
    public void apply(Project project) {
-      if (DefaultGroovyMethods.asBoolean(project.getExtensions().findByName(R365_EXTENSION_NAME))) {
+      if (DefaultGroovyMethods.asBoolean(project.getExtensions().findByName(ROOT_EXTENSION_NAME))) {
          return;
       }
 
@@ -54,8 +54,8 @@ public class RootExtensionFeature implements PluginFeature {
       rootExtension.setDockerRegistryPassword(getDockerRegistryPassword(project));
       rootExtension.setDockerRegistryAwsProfile(getDockerRegistryAwsProfile(project));
       rootExtension.setJavaVersion(getJavaVersion(project));
-//      r365Extension.setUseNvm(getUseNvm(project));
-//      r365Extension.setDefaultNodeVersion(getDefaultNodeVersion(project));
+//      rootExtension.setUseNvm(getUseNvm(project));
+//      rootExtension.setDefaultNodeVersion(getDefaultNodeVersion(project));
       rootExtension.setContextName(getContextName(project));
       rootExtension.setUseSemVer(getUseSemVer(project));
       rootExtension.setBuildNumber(getBuildNumber(project));
@@ -66,7 +66,7 @@ public class RootExtensionFeature implements PluginFeature {
       rootExtension.setCommitHashProvider(new CommitHashProvider(project));
       rootExtension.setCommitTimeProvider(new CommitTimeProvider(project));
 
-      project.getExtensions().add(R365_EXTENSION_NAME, rootExtension);
+      project.getExtensions().add(ROOT_EXTENSION_NAME, rootExtension);
    }
 
    private static String getJavaPlatformVersion(Project project) {

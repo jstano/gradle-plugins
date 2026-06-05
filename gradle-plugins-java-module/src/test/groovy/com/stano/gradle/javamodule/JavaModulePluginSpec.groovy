@@ -11,27 +11,27 @@ import spock.lang.Ignore
 class JavaModulePluginSpec extends BasePluginSpec {
 
    def setup() {
-      System.setProperty('r365MavenUrl', 'https://artifactory.r365.com/artifactory/maven')
-      System.setProperty('r365MavenUsername', 'MAVEN_USERNAME')
-      System.setProperty('r365MavenPassword', 'MAVEN_PASSWORD')
+      System.setProperty('stanoMavenUrl', 'https://maven.stano.com')
+      System.setProperty('stanoMavenUsername', 'MAVEN_USERNAME')
+      System.setProperty('stanoMavenPassword', 'MAVEN_PASSWORD')
    }
 
-   def "if the r365-project plugin has not been applied then it should be applied to the root project"() {
-      childProject.apply plugin: 'r365-java-module'
+   def "if the stano-project plugin has not been applied then it should be applied to the root project"() {
+      childProject.apply plugin: 'stano-java-module'
 
       expect:
-      rootProject.plugins.hasPlugin('r365-project')
+      rootProject.plugins.hasPlugin('stano-project')
 
-      childProject.r365.mavenUsername == "MAVEN_USERNAME"
-      childProject.r365.mavenPassword == "MAVEN_PASSWORD"
-      childProject.r365.setPlatformVersion == '5.0.0'
+      childProject.stano.mavenUsername == "MAVEN_USERNAME"
+      childProject.stano.mavenPassword == "MAVEN_PASSWORD"
+      childProject.stano.setPlatformVersion == '5.0.0'
    }
 
    def "verify that the common plugins are applied"() {
-      childProject.apply plugin: 'r365-java-module'
+      childProject.apply plugin: 'stano-java-module'
 
       expect:
-      childProject.plugins.hasPlugin('r365-java-module')
+      childProject.plugins.hasPlugin('stano-java-module')
       childProject.plugins.hasPlugin('java-library')
       childProject.plugins.hasPlugin('groovy')
       childProject.plugins.hasPlugin('jacoco')
@@ -39,7 +39,7 @@ class JavaModulePluginSpec extends BasePluginSpec {
    }
 
    def "verify that the sourceSets are configured properly"() {
-      childProject.apply plugin: 'r365-java-module'
+      childProject.apply plugin: 'stano-java-module'
 
       expect:
       childProject.sourceSets.main.java.srcDirs.size() == 1
@@ -62,7 +62,7 @@ class JavaModulePluginSpec extends BasePluginSpec {
    }
 
    def "verify that the repositories are configured properly"() {
-      childProject.apply plugin: 'r365-java-module'
+      childProject.apply plugin: 'stano-java-module'
 
       expect:
       childProject.repositories.size() == 9
@@ -70,8 +70,8 @@ class JavaModulePluginSpec extends BasePluginSpec {
       childProject.repositories[0].name == 'MavenLocal'
       childProject.repositories[1].name == 'MavenRepo'
 
-      childProject.repositories[2].name == 'r365-maven'
-      childProject.repositories[2].url.toString() == 'https://artifactory.r365.com/artifactory/maven'
+      childProject.repositories[2].name == 'stano-maven'
+      childProject.repositories[2].url.toString() == 'https://maven.stano.com'
       childProject.repositories[2].credentials.username == "MAVEN_USERNAME"
       childProject.repositories[2].credentials.password == "MAVEN_PASSWORD"
 
@@ -84,7 +84,7 @@ class JavaModulePluginSpec extends BasePluginSpec {
    }
 
    def "verify that the default dependencies are configured properly"() {
-      childProject.apply plugin: 'r365-java-module'
+      childProject.apply plugin: 'stano-java-module'
 
       expect:
       childProject.configurations.any {
@@ -98,21 +98,21 @@ class JavaModulePluginSpec extends BasePluginSpec {
       }
 
       childProject.configurations.getByName('implementation').dependencies.size() == 1
-      childProject.configurations.getByName('implementation').dependencies[0].group == 'com.r365'
+      childProject.configurations.getByName('implementation').dependencies[0].group == 'com.stano'
       childProject.configurations.getByName('implementation').dependencies[0].name == 'framework-bom'
       childProject.configurations.getByName('implementation').dependencies[0].version == '5.0.0'
-//      project.configurations.getByName('implementation').dependencies[1].group == 'com.r365'
+//      project.configurations.getByName('implementation').dependencies[1].group == 'com.stano'
 //      project.configurations.getByName('implementation').dependencies[1].name == 'framework-groovy'
 //      project.configurations.getByName('implementation').dependencies[1].version == null
 
       childProject.configurations.getByName('testImplementation').dependencies.size() == 1
-      childProject.configurations.getByName('testImplementation').dependencies[0].group == 'com.r365'
+      childProject.configurations.getByName('testImplementation').dependencies[0].group == 'com.stano'
       childProject.configurations.getByName('testImplementation').dependencies[0].name == 'framework-test'
       childProject.configurations.getByName('testImplementation').dependencies[0].version == null
    }
 
    def "verify that the artifacts are configured properly"() {
-      childProject.apply plugin: 'r365-java-module'
+      childProject.apply plugin: 'stano-java-module'
 
       Jar jarTask = (Jar)childProject.tasks.findByName('jar')
 
@@ -128,7 +128,7 @@ class JavaModulePluginSpec extends BasePluginSpec {
    }
 
    def "verify that the compilers are configured properly"() {
-      childProject.apply plugin: 'r365-java-module'
+      childProject.apply plugin: 'stano-java-module'
 
       expect:
       childProject.sourceCompatibility == JavaVersion.current()
@@ -165,7 +165,7 @@ class JavaModulePluginSpec extends BasePluginSpec {
    }
 
    def "should be able to override the java version using the standard gradle java plugin settings"() {
-      childProject.apply plugin: 'r365-java-module'
+      childProject.apply plugin: 'stano-java-module'
 
       childProject.java {
          sourceCompatibility = javaVersion
@@ -188,7 +188,7 @@ class JavaModulePluginSpec extends BasePluginSpec {
    }
 
    def "verify that the test plugin is configured properly"() {
-      childProject.apply plugin: 'r365-java-module'
+      childProject.apply plugin: 'stano-java-module'
 
       expect:
       childProject.test.minHeapSize == '512m'
@@ -196,7 +196,7 @@ class JavaModulePluginSpec extends BasePluginSpec {
    }
 
    def "verify that the jacoco plugin is configured properly"() {
-      childProject.apply plugin: 'r365-java-module'
+      childProject.apply plugin: 'stano-java-module'
 
       expect:
       JacocoReport jacocoTestReportTask = (JacocoReport)childProject.tasks.getByName('jacocoTestReport')

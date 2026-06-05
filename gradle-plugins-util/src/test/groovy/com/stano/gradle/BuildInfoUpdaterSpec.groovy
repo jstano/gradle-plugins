@@ -1,5 +1,6 @@
 package com.stano.gradle
 
+import groovy.ant.AntBuilder
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
 import org.yaml.snakeyaml.Yaml
@@ -13,7 +14,7 @@ class BuildInfoUpdaterSpec extends Specification {
                               .withName('test')
                               .withProjectDir(File.createTempDir('gradle-project-plugin-test', 'test'))
                               .build()
-      project.version = '4.5.6'
+      project.version = '1.2.3'
       project.projectDir.mkdirs()
       project.file("build/resources/test").mkdirs()
       new RootExtensionFeature().apply(project);
@@ -29,7 +30,7 @@ class BuildInfoUpdaterSpec extends Specification {
          getEnvironmentVariable("BRANCH_NAME") >> 'main'
          getEnvironmentVariable("JOB_NAME") >> 'job/dev/job/taps/job/main'
       }
-      def r365Extension = Mock(RootExtension)
+      def rootExtension = Mock(RootExtension)
       def buildInfo = new BuildInfoProvider(environment)
 
       def ant = new AntBuilder()
@@ -37,7 +38,7 @@ class BuildInfoUpdaterSpec extends Specification {
 
       def applicationYmlFile = new File("$project.buildDir/resources/test/application.yml")
 
-      BuildInfoUpdater.updateYmlWithBuildInfo(r365Extension, project.version.toString(), buildInfo, "$project.buildDir/resources/test/application.yml")
+      BuildInfoUpdater.updateYmlWithBuildInfo(rootExtension, project.version.toString(), buildInfo, "$project.buildDir/resources/test/application.yml")
 
       def applicationYamlData = null
 
@@ -60,12 +61,12 @@ class BuildInfoUpdaterSpec extends Specification {
          getEnvironmentVariable("BRANCH_NAME") >> 'main'
          getEnvironmentVariable("JOB_NAME") >> 'job/dev/job/taps/job/main'
       }
-      def r365Extension = Mock(RootExtension)
+      def rootExtension = Mock(RootExtension)
       def buildInfo = new BuildInfoProvider(environment)
 
       def applicationYmlFile = new File("$project.layout.buildDirectory/resources/test/application.yml")
 
-      BuildInfoUpdater.updateYmlWithBuildInfo(r365Extension, project.version.toString(), buildInfo, "$project.buildDir/resources/test/application.yml")
+      BuildInfoUpdater.updateYmlWithBuildInfo(rootExtension, project.version.toString(), buildInfo, "$project.buildDir/resources/test/application.yml")
 
       expect:
       !applicationYmlFile.exists()

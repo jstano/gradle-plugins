@@ -1,4 +1,4 @@
-package com.stano.gradle.javamodule
+package com.stano.gradle.springboot
 
 import com.stano.gradle.RootExtensionFeature
 import org.gradle.testfixtures.ProjectBuilder
@@ -10,7 +10,7 @@ class SpringBootPluginSpec extends Specification {
     project.ext.javaPlatformVersion = "1.0.0"
     new RootExtensionFeature().apply(project)
     project.apply(plugin: "java")
-    project.apply(plugin: "com.r365.spring-boot")
+    project.apply(plugin: "com.stano.spring-boot")
 
     expect:
     project.plugins.hasPlugin("org.springframework.boot")

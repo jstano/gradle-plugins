@@ -38,9 +38,9 @@ subprojects {
   }
 
   dependencies {
-    implementation("org.codehaus.groovy:groovy-all:${properties["groovyVersion"]}")
-    implementation(antDep)
+    implementation(localGroovy())
     implementation(gradleApi())
+    implementation(antDep)
     testRuntimeOnly(junitPlatformLauncherDep)
   }
 

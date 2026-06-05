@@ -16,18 +16,18 @@ class SpringBootPlugin implements Plugin<Project> {
     RootExtension rootExtension = project.getRootProject().getExtensions().getByType(RootExtension.class);
 
     if (rootExtension.getJavaPlatformVersion() != null) {
-      project.getBuildscript().getDependencies().add("classpath", "com.r365:platform-spring-boot-gradle-plugin:" + rootExtension.getJavaPlatformVersion());
+      project.getBuildscript().getDependencies().add("classpath", "com.stano:platform-spring-boot-gradle-plugin:" + rootExtension.getJavaPlatformVersion());
 
       PluginContainer plugins = project.getPlugins();
       plugins.apply("org.springframework.boot");
 
       DependencyHandler dependencies = project.getDependencies();
-      dependencies.add("developmentOnly", dependencies.enforcedPlatform("com.r365:platform-bom:" + rootExtension.getJavaPlatformVersion()));
+      dependencies.add("developmentOnly", dependencies.enforcedPlatform("com.stano:platform-bom:" + rootExtension.getJavaPlatformVersion()));
       dependencies.add("developmentOnly", "org.springframework.boot:spring-boot-devtools");
-      dependencies.add("runtimeOnly", dependencies.enforcedPlatform("com.r365:platform-bom:" + rootExtension.getJavaPlatformVersion()));
+      dependencies.add("runtimeOnly", dependencies.enforcedPlatform("com.stano:platform-bom:" + rootExtension.getJavaPlatformVersion()));
       dependencies.add("runtimeOnly", "io.micrometer:micrometer-registry-prometheus");
-      dependencies.add("implementation", "com.r365:platform-spring-boot-application:" + rootExtension.getJavaPlatformVersion());
-      dependencies.add("testImplementation", "com.r365:platform-spring-test:" + rootExtension.getJavaPlatformVersion());
+      dependencies.add("implementation", "com.stano:platform-spring-boot-application:" + rootExtension.getJavaPlatformVersion());
+      dependencies.add("testImplementation", "com.stano:platform-spring-test:" + rootExtension.getJavaPlatformVersion());
 //    tasks.withType<BootBuildImage> {
 //      builder = "paketobuildpacks/builder-jammy-base:latest"
 //    }

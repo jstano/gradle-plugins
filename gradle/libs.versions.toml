@@ -20,7 +20,7 @@ owasp-dependency-check = "org.owasp:dependency-check-gradle:10.0.3"
 s3-build-cache = "com.github.burrunan.s3cache:s3-build-cache:1.9.5"
 snakeyaml = "org.yaml:snakeyaml:2.6"
 sonarqube-plugin = "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:6.2.0.5505"
-spock-core = "org.spockframework:spock-core:2.4-groovy-3.0"
+spock-core = "org.spockframework:spock-core:2.4-groovy-4.0"
 spring-boot-plugin = { module = "org.springframework.boot:org.springframework.boot.gradle.plugin", version.ref = "spring-boot" }
 
 [bundles]

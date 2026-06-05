@@ -17,7 +17,7 @@ public class JavaModulePlugin implements Plugin<Project> {
       project.getRootProject().getPlugins().apply(ProjectPlugin.class);
     }
 
-    project.getExtensions().create("r365Java", JavaExtension.class);
+    project.getExtensions().create("stanoJava", JavaExtension.class);
 
     new ConfigurePluginsFeature().apply(project);
     new ConfigureDefaultDependenciesFeature().apply(project);

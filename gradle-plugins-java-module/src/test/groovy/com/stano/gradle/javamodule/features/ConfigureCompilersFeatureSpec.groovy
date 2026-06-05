@@ -20,14 +20,14 @@ class ConfigureCompilersFeatureSpec extends Specification {
       def javaVersionProvider = Mock(JavaVersionProvider) {
          currentVersion() >> JavaVersion.VERSION_1_8
       }
-      def r365Extension = Mock(RootExtension) {
+      def rootExtension = Mock(RootExtension) {
          getJavaVersion() >> "21"
         getJavaPlatformVersion() >> "5.0.0"
       }
       def project = Mock(Project) {
          getRootProject() >> Mock(Project) {
             getExtensions() >> Mock(ExtensionContainer) {
-              getByType(RootExtension.class) >> r365Extension
+              getByType(RootExtension.class) >> rootExtension
             }
          }
       }
@@ -45,7 +45,7 @@ class ConfigureCompilersFeatureSpec extends Specification {
       def javaVersionProvider = Mock(JavaVersionProvider) {
          currentVersion() >> JavaVersion.VERSION_17
       }
-      def r365Extension = Mock(RootExtension) {
+      def rootExtension = Mock(RootExtension) {
          getJavaVersion() >> "8"
         getJavaPlatformVersion() >> "5.0.0"
       }
@@ -79,7 +79,7 @@ class ConfigureCompilersFeatureSpec extends Specification {
       def project = Mock(Project) {
          getRootProject() >> Mock(Project) {
             getExtensions() >> Mock(ExtensionContainer) {
-              getByType(RootExtension.class) >> r365Extension
+              getByType(RootExtension.class) >> rootExtension
             }
          }
          getTasks() >> Mock(TaskContainer) {

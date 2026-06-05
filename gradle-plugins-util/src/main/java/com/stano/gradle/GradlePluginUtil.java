@@ -117,15 +117,10 @@ public class GradlePluginUtil {
 
     try {
       RootExtension rootRootExtension = rootProject.getExtensions().getByType(RootExtension.class);
-      if (rootRootExtension != null) {
-        extensionContextName = rootRootExtension.getContextName();
-      }
-      else {
-        project.getLogger().lifecycle("R365Extension not found on project: " + project.getName());
-      }
+      extensionContextName = rootRootExtension.getContextName();
     }
     catch (Exception ex) {
-      project.getLogger().lifecycle("R365Extension contextName not found on project: " + project.getName());
+      project.getLogger().lifecycle("RootExtension contextName not found on project: " + project.getName());
     }
 
     String rootProjectName = extensionContextName == null

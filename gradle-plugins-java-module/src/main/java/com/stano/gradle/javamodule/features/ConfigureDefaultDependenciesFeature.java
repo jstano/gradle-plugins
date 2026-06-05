@@ -12,10 +12,10 @@ import java.util.Map;
 public class ConfigureDefaultDependenciesFeature implements PluginFeature {
   @Override
   public void apply(Project project) {
-    final var r365JavaExtension = project.getExtensions().getByType(JavaExtension.class);
-    final var r365Extension = project.getRootProject().getExtensions().getByType(RootExtension.class);
+    final var javaExtension = project.getExtensions().getByType(JavaExtension.class);
+    final var rootExtension = project.getRootProject().getExtensions().getByType(RootExtension.class);
 
-    if (r365Extension.getJavaPlatformVersion() != null) {
+    if (rootExtension.getJavaPlatformVersion() != null) {
       project.getConfigurations().forEach(it -> {
         it.exclude(exclude("commons-logging", "commons-logging"));
         it.exclude(exclude("commons-logging", "commons-logging-api"));
@@ -23,9 +23,9 @@ public class ConfigureDefaultDependenciesFeature implements PluginFeature {
       });
 
       DependencyHandler dependencies = project.getDependencies();
-      dependencies.add("implementation", dependencies.enforcedPlatform("com.r365:platform-bom:" + r365Extension.getJavaPlatformVersion()));
+      dependencies.add("implementation", dependencies.enforcedPlatform("com.stano:platform-bom:" + rootExtension.getJavaPlatformVersion()));
       dependencies.add("compileOnly", "org.jetbrains:annotations:26.0.2");
-      dependencies.add("testImplementation", "com.r365:platform-test");
+      dependencies.add("testImplementation", "com.stano:platform-test");
       dependencies.add("testRuntimeOnly", "org.junit.platform:junit-platform-launcher");
     }
   }

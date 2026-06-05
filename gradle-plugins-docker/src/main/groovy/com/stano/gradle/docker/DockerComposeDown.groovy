@@ -21,41 +21,44 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Internal
+import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.TaskAction
 import org.gradle.process.ExecOperations
+import org.gradle.work.DisableCachingByDefault
 
 import javax.inject.Inject
 
 @Slf4j
+@DisableCachingByDefault(because = "docker compose has not input or outputs")
 class DockerComposeDown extends DefaultTask {
+  @Internal
+  Configuration configuration
 
-   @Internal
-   Configuration configuration
+  @Internal
+  ExecOperations execOperations
 
-   @Internal
-   ExecOperations execOperations
+  @Inject
+  DockerComposeDown(ExecOperations execOperations) {
+    this.group = 'Docker'
+    this.execOperations = execOperations
+  }
 
-   @Inject
-   DockerComposeDown(ExecOperations execOperations) {
-      this.group = 'Docker'
-      this.execOperations = execOperations
-   }
+  @TaskAction
+  void run() {
+    GradleExecUtils.execWithErrorMessage(project, execOperations) {
+      it.executable "docker-compose"
+      it.args "-f", getDockerComposeFile(), "down"
+    }
+  }
 
-   @TaskAction
-   void run() {
-      GradleExecUtils.execWithErrorMessage(project, execOperations) {
-         it.executable "docker-compose"
-         it.args "-f", getDockerComposeFile(), "down"
-      }
-   }
+  @InputFiles
+  @PathSensitive
+  File getDockerComposeFile() {
+    return dockerComposeExtension.dockerComposeFile
+  }
 
-   @InputFiles
-   File getDockerComposeFile() {
-      return dockerComposeExtension.dockerComposeFile
-   }
-
-   @Internal
-   DockerComposeExtension getDockerComposeExtension() {
-      return project.extensions.findByType(DockerComposeExtension)
-   }
+  @Internal
+  DockerComposeExtension getDockerComposeExtension() {
+    return project.extensions.findByType(DockerComposeExtension)
+  }
 }
