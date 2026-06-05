@@ -37,13 +37,15 @@ public class ProjectsEvaluatedAction implements Action<Gradle> {
                                             .toList();
 
     dependentProjects.forEach(dependentProject -> {
-      SourceSetContainer sourceSetContainer = dependentProject.getExtensions().getByType(SourceSetContainer.class);
-      sourceSetContainer.stream().filter(it -> it.getName().equals("main")).findFirst().ifPresent(mainSourceSet -> {
-        SourceDirectorySet javaSrc = mainSourceSet.getAllJava();
-        SourceSetOutput mainOutput = mainSourceSet.getOutput();
-        jacocoReport.additionalSourceDirs(project.files(javaSrc.getSrcDirs()));
-        jacocoReport.additionalClassDirs(mainOutput);
-      });
+      SourceSetContainer sourceSetContainer = dependentProject.getExtensions().findByType(SourceSetContainer.class);
+      if (sourceSetContainer != null) {
+        sourceSetContainer.stream().filter(it -> it.getName().equals("main")).findFirst().ifPresent(mainSourceSet -> {
+          SourceDirectorySet javaSrc = mainSourceSet.getAllJava();
+          SourceSetOutput mainOutput = mainSourceSet.getOutput();
+          jacocoReport.additionalSourceDirs(project.files(javaSrc.getSrcDirs()));
+          jacocoReport.additionalClassDirs(mainOutput);
+        });
+      }
     });
   }
 }
