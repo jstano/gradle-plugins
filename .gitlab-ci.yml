@@ -1,4 +1,0 @@
-include:
-  - project: 'compeat/development/everee/package-repository'
-    file: '/templates/gradle-library.yml'
-

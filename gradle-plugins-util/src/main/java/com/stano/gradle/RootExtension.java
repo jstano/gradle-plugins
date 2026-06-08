@@ -13,12 +13,11 @@ public class RootExtension {
    private String dockerRegistryUsername;
    private String dockerRegistryPassword;
    private String dockerRegistryAwsProfile;
-   private String javaPlatformVersion;
+   private String mspVersion;
    private String javaVersion;
    private boolean useNvm;
    private String defaultNodeVersion;
    private String contextName;
-   private boolean useSemVer;
    private String buildNumber;
    private String buildTime;
 
@@ -92,12 +91,12 @@ public class RootExtension {
       this.dockerRegistryAwsProfile = dockerRegistryAwsProfile;
    }
 
-   public String getJavaPlatformVersion() {
-      return javaPlatformVersion;
+   public String getMspVersion() {
+      return mspVersion;
    }
 
-   public void setJavaPlatformVersion(String javaPlatformVersion) {
-      this.javaPlatformVersion = javaPlatformVersion;
+   public void setMspVersion(String mspVersion) {
+      this.mspVersion = mspVersion;
    }
 
    public String getJavaVersion() {
@@ -130,14 +129,6 @@ public class RootExtension {
 
    public void setContextName(String contextName) {
       this.contextName = contextName;
-   }
-
-   public boolean isUseSemVer() {
-      return useSemVer;
-   }
-
-   public void setUseSemVer(boolean useSemVer) {
-      this.useSemVer = useSemVer;
    }
 
    public LocalDateTime getBuildTime() {

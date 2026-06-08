@@ -15,7 +15,7 @@ public class ConfigureDefaultDependenciesFeature implements PluginFeature {
     final var javaExtension = project.getExtensions().getByType(JavaExtension.class);
     final var rootExtension = project.getRootProject().getExtensions().getByType(RootExtension.class);
 
-    if (rootExtension.getJavaPlatformVersion() != null) {
+    if (rootExtension.getMspVersion() != null) {
       project.getConfigurations().forEach(it -> {
         it.exclude(exclude("commons-logging", "commons-logging"));
         it.exclude(exclude("commons-logging", "commons-logging-api"));
@@ -23,9 +23,9 @@ public class ConfigureDefaultDependenciesFeature implements PluginFeature {
       });
 
       DependencyHandler dependencies = project.getDependencies();
-      dependencies.add("implementation", dependencies.enforcedPlatform("com.stano:platform-bom:" + rootExtension.getJavaPlatformVersion()));
+      dependencies.add("implementation", dependencies.enforcedPlatform("com.stano:msp-bom:" + rootExtension.getMspVersion()));
       dependencies.add("compileOnly", "org.jetbrains:annotations:26.0.2");
-      dependencies.add("testImplementation", "com.stano:platform-test");
+      dependencies.add("testImplementation", "com.stano:msp-test-starter");
       dependencies.add("testRuntimeOnly", "org.junit.platform:junit-platform-launcher");
     }
   }

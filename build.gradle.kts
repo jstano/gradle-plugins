@@ -3,9 +3,15 @@ import com.stano.gradle_dependency_management.MavenRepositoryUtil
 plugins {
   id("org.sonarqube")
   id("java-gradle-plugin")
-  id("groovy")
   id("maven-publish")
   id("jacoco")
+  id("com.diffplug.spotless") version "8.6.0"
+}
+
+spotless {
+  java {
+    palantirJavaFormat()
+  }
 }
 
 sonar {
@@ -29,7 +35,6 @@ subprojects {
   val properties = extensions.extraProperties.properties
 
   apply(plugin = "java-gradle-plugin")
-  apply(plugin = "groovy")
   apply(plugin = "maven-publish")
   apply(plugin = "jacoco")
 
@@ -38,7 +43,6 @@ subprojects {
   }
 
   dependencies {
-    implementation(localGroovy())
     implementation(gradleApi())
     implementation(antDep)
     testRuntimeOnly(junitPlatformLauncherDep)
@@ -47,11 +51,6 @@ subprojects {
   MavenRepositoryUtil.configurePublishing(this)
 
   tasks.withType<JavaCompile>().configureEach {
-    options.compilerArgs = compilerOptions()
-    sourceCompatibility = "21"
-    targetCompatibility = "21"
-  }
-  tasks.withType<GroovyCompile>().configureEach {
     options.compilerArgs = compilerOptions()
     sourceCompatibility = "21"
     targetCompatibility = "21"

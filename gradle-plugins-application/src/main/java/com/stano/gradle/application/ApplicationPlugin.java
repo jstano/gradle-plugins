@@ -17,20 +17,16 @@ public class ApplicationPlugin extends ProjectPlugin {
     project.getPluginManager().apply("base");
     project.getPluginManager().apply("jacoco");
 
-    overrideVersion(project);
+    setVersion(project);
     registerJacocoReport(project);
+  }
 
+  private void setVersion(Project project) {
+    RootExtension rootExtension = project.getExtensions().getByType(RootExtension.class);
+    project.setVersion(new ProjectVersionProvider(project, rootExtension));
     project.getSubprojects().forEach(subProject -> {
       subProject.setVersion(project.getVersion());
     });
-  }
-
-  private void overrideVersion(Project project) {
-    RootExtension rootExtension = project.getExtensions().getByType(RootExtension.class);
-
-    if (!rootExtension.isUseSemVer()) {
-      project.setVersion(new ProjectVersionProvider(project, rootExtension));
-    }
   }
 
   private void registerJacocoReport(Project project) {

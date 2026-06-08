@@ -21,7 +21,7 @@ import java.time.ZoneId;
  */
 public class RootExtensionFeature implements PluginFeature {
    private static final String ROOT_EXTENSION_NAME = "root";
-   private static final String JAVA_PLATFORM_VERSION = "javaPlatformVersion";
+   private static final String MSP_VERSION = "mspVersion";
    private static final String PACT_BROKER_URL = "pactBrokerUrl";
    private static final String PACT_BROKER_USERNAME = "pactBrokerUsername";
    private static final String PACT_BROKER_PASSWORD = "pactBrokerPassword";
@@ -34,7 +34,6 @@ public class RootExtensionFeature implements PluginFeature {
    private static final String DEFAULT_NODE_VERSION = "com.stano.default-node-version";
    private static final String USE_NVM = "com.stano.use-nvm";
    private static final String CONTEXT_NAME = "contextName";
-   private static final String USE_SEM_VER = "useSemVer";
    private static final String DEFAULT_JAVA_VERSION = "21";
 
    @Override
@@ -44,7 +43,7 @@ public class RootExtensionFeature implements PluginFeature {
       }
 
       RootExtension rootExtension = new RootExtension();
-      rootExtension.setJavaPlatformVersion(getJavaPlatformVersion(project));
+      rootExtension.setMspVersion(getMspVersion(project));
       rootExtension.setPactBrokerUrl(getPactBrokerUrl(project));
       rootExtension.setPactBrokerUsername(getPactBrokerUsername(project));
       rootExtension.setPactBrokerPassword(getPactBrokerPassword(project));
@@ -57,7 +56,6 @@ public class RootExtensionFeature implements PluginFeature {
 //      rootExtension.setUseNvm(getUseNvm(project));
 //      rootExtension.setDefaultNodeVersion(getDefaultNodeVersion(project));
       rootExtension.setContextName(getContextName(project));
-      rootExtension.setUseSemVer(getUseSemVer(project));
       rootExtension.setBuildNumber(getBuildNumber(project));
       rootExtension.setBuildTime(LocalDateTime.now(ZoneId.of("America/Chicago")));
       rootExtension.setRepositoryUrlProvider(new RepositoryUrlProvider(project));
@@ -69,8 +67,8 @@ public class RootExtensionFeature implements PluginFeature {
       project.getExtensions().add(ROOT_EXTENSION_NAME, rootExtension);
    }
 
-   private static String getJavaPlatformVersion(Project project) {
-      return getProjectProperty(project, JAVA_PLATFORM_VERSION);
+   private static String getMspVersion(Project project) {
+      return getProjectProperty(project, MSP_VERSION);
    }
 
    private static String getPactBrokerUrl(Project project) {
@@ -119,10 +117,6 @@ public class RootExtensionFeature implements PluginFeature {
 
    private static String getContextName(Project project) {
       return getProjectProperty(project, CONTEXT_NAME);
-   }
-
-   private static boolean getUseSemVer(Project project) {
-      return Boolean.parseBoolean(getProjectProperty(project, USE_SEM_VER, "false"));
    }
 
    private String getBuildNumber(Project project) {

@@ -22,7 +22,11 @@ public class ProjectVersionProvider implements Serializable {
          String commitHash = new CommitHashProvider(project).toString();
 
          if (commitTimestamp != null && commitHash != null) {
-            return String.format("%s-%s-%s", commitTimestamp, commitHash, rootExtension.getBuildNumber());
+            String buildNumber = rootExtension.getBuildNumber();
+            if (buildNumber != null) {
+               return String.format("%s-%s-%s", commitTimestamp, commitHash, buildNumber);
+            }
+            return String.format("%s-%s", commitTimestamp, commitHash);
          }
 
          version = rootExtension.getBuildTimeFormatted();
