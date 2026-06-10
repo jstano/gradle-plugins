@@ -21,24 +21,10 @@ public class ConfigureJacocoFeature implements PluginFeature {
                                      .toList());
     jacocoReport.getExecutionData()
                 .setFrom(project.fileTree(project.getLayout().getBuildDirectory()).include("jacoco/test.exec"));
-//    jacocoReport.getSourceDirectories()
-//                .setFrom(project.getSourceSets().getByName("main").getAllJava().getSrcDirs());
 
     project.getGradle().projectsEvaluated(new ProjectsEvaluatedAction(project, jacocoReport));
 
     Task testTask = project.getTasks().getByName("test");
     testTask.finalizedBy("jacocoTestReport");
-
-//      tasks.named<JacocoReport>("jacocoTestReport") {
-//        classDirectories.setFrom(files(classDirectories.files.map {
-//          fileTree(it).apply {
-//            exclude("**/generated/**")
-//          }
-//        }))
-//        sourceDirectories.setFrom(sourceSets.main.get().java.srcDirs)
-//        executionData.setFrom(fileTree(project.layout.buildDirectory).apply {
-//          include("jacoco/test.exec")
-//        })
-//      }
   }
 }

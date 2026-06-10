@@ -2,7 +2,7 @@ import com.stano.gradle_dependency_management.MavenRepositoryUtil
 
 plugins {
   id("org.sonarqube")
-  id("java-gradle-plugin")
+  id("java-library")
   id("maven-publish")
   id("jacoco")
   id("com.diffplug.spotless") version "8.6.0"
@@ -10,7 +10,8 @@ plugins {
 
 spotless {
   java {
-    palantirJavaFormat()
+    eclipse().configFile("eclipse-java-format.xml")
+//    palantirJavaFormat()
   }
 }
 
@@ -34,13 +35,9 @@ val junitPlatformLauncherDep = libs.junit.platform.launcher
 subprojects {
   val properties = extensions.extraProperties.properties
 
-  apply(plugin = "java-gradle-plugin")
+  apply(plugin = "java-library")
   apply(plugin = "maven-publish")
   apply(plugin = "jacoco")
-
-  gradlePlugin {
-    isAutomatedPublishing = false
-  }
 
   dependencies {
     implementation(gradleApi())
@@ -57,6 +54,8 @@ subprojects {
   }
   tasks.withType<Test>().configureEach {
     useJUnitPlatform()
+    jvmArgs("--add-opens", "java.base/java.lang=ALL-UNNAMED")
+    jvmArgs("--add-opens", "java.base/java.lang.invoke=ALL-UNNAMED")
     jvmArgs("--add-opens", "java.base/java.lang.reflect=ALL-UNNAMED")
     finalizedBy(tasks.jacocoTestReport)
   }

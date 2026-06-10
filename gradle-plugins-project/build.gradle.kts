@@ -1,3 +1,11 @@
+plugins {
+  id("java-gradle-plugin")
+}
+
+gradlePlugin {
+  isAutomatedPublishing = false
+}
+
 dependencies {
   implementation(project(":gradle-plugins-util"))
 

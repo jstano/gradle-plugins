@@ -37,9 +37,6 @@ include("gradle-plugins-docker")
 include("gradle-plugins-java-common")
 include("gradle-plugins-java-library")
 include("gradle-plugins-java-module")
-//include("gradle-plugins-npm")
-//include("gradle-plugins-npm-project")
-//include("gradle-plugins-pact")
 include("gradle-plugins-project")
 include("gradle-plugins-settings")
 include("gradle-plugins-sonar")
@@ -72,6 +69,4 @@ gradle.settingsEvaluated {
       }
     }
   }
-
-  enableFeaturePreview("GROOVY_COMPILATION_AVOIDANCE")
 }

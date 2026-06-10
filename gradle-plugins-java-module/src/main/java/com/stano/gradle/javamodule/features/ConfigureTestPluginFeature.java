@@ -24,11 +24,5 @@ public class ConfigureTestPluginFeature implements PluginFeature {
       testLoggingContainer.events("failed");
       testLoggingContainer.setExceptionFormat(org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL);
     });
-//    testTask.beforeTest(new Closure(this) {
-//      public void doCall(Test testDescriptor) {
-//        String date = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date());
-//        System.out.println("Running test: " + testDescriptor.getName() + " at " + date);
-//      }
-//    });
   }
 }
