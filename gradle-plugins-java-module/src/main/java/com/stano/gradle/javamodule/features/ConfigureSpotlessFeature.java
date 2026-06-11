@@ -15,6 +15,7 @@ public class ConfigureSpotlessFeature implements PluginFeature {
         URL configFile = ConfigureSpotlessFeature.class.getResource("/eclipse-java-format.xml");
         java.eclipse().configFile(configFile);
         java.removeUnusedImports();
+        java.expandWildcardImports();
         java.trimTrailingWhitespace();
         java.endWithNewline();
       });
