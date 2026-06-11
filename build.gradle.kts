@@ -5,7 +5,7 @@ plugins {
   id("java-library")
   id("maven-publish")
   id("jacoco")
-  id("com.diffplug.spotless") version "8.6.0"
+  id("com.diffplug.spotless") version libs.versions.spotless
 }
 
 spotless {

@@ -13,6 +13,7 @@ dependencies {
 
   implementation(libs.jacocolog)
   implementation(libs.kotlin.jvm.plugin)
+  implementation(libs.spotless)
 
   testImplementation(project(":gradle-plugins-test"))
 }

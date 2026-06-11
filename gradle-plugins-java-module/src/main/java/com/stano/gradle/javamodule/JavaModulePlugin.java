@@ -5,6 +5,7 @@ import com.stano.gradle.javamodule.features.ConfigureCompilersFeature;
 import com.stano.gradle.javamodule.features.ConfigureDefaultDependenciesFeature;
 import com.stano.gradle.javamodule.features.ConfigureJacocoFeature;
 import com.stano.gradle.javamodule.features.ConfigurePluginsFeature;
+import com.stano.gradle.javamodule.features.ConfigureSpotlessFeature;
 import com.stano.gradle.javamodule.features.ConfigureTestPluginFeature;
 import com.stano.gradle.project.ProjectPlugin;
 import org.gradle.api.GradleException;
@@ -28,6 +29,7 @@ public class JavaModulePlugin implements Plugin<Project> {
     project.getExtensions().create("stanoJava", JavaExtension.class);
 
     new ConfigurePluginsFeature().apply(project);
+    new ConfigureSpotlessFeature().apply(project);
     new ConfigureDefaultDependenciesFeature().apply(project);
     new ConfigureCompilersFeature().apply(project);
     new ConfigureTestPluginFeature().apply(project);
