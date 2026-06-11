@@ -85,7 +85,7 @@ public class DockerPlugin implements Plugin<Project> {
             task.setDescription("Copies Docker image url to a file.");
             task.doLast(ignored -> {
                 String content = ext.getName();
-                String fileName = project.getBuildDir() + "/docker-image-url.txt";
+                String fileName = project.getLayout().getBuildDirectory().get().getAsFile() + "/docker-image-url.txt";
                 try {
                     Files.writeString(Path.of(fileName), content);
                 } catch (IOException e) {
@@ -117,7 +117,7 @@ public class DockerPlugin implements Plugin<Project> {
 
         project.afterEvaluate(p -> {
             ext.resolvePathsAndValidate();
-            String dockerDir = p.getBuildDir() + "/docker";
+            String dockerDir = p.getLayout().getBuildDirectory().get().getAsFile() + "/docker";
             clean.delete(dockerDir);
 
             prepare.from(ext.getCopySpec());
@@ -223,7 +223,7 @@ public class DockerPlugin implements Plugin<Project> {
         }
         if (!ext.getLabels().isEmpty()) {
             for (Map.Entry<String, String> label : ext.getLabels().entrySet()) {
-                if (!label.getKey().matches(LABEL_KEY_PATTERN.pattern())) {
+                if (!LABEL_KEY_PATTERN.matcher(label.getKey()).matches()) {
                     throw new GradleException(String.format(
                         "Docker label '%s' contains illegal characters. "
                             + "Label keys must only contain lowercase alphanumeric, `.`, or `-` characters (must match %s).",

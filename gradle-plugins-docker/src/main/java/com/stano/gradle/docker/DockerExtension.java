@@ -82,7 +82,11 @@ public class DockerExtension {
     }
 
     public Set<String> getTags() {
-        return Sets.union(this.tags, ImmutableSet.of(project.getVersion().toString()));
+        String versionTag = project.getVersion().toString();
+        if (versionTag != null && !versionTag.isEmpty() && !versionTag.contains(":") && !versionTag.contains("/")) {
+            return Sets.union(this.tags, ImmutableSet.of(versionTag));
+        }
+        return ImmutableSet.copyOf(this.tags);
     }
 
     @Deprecated

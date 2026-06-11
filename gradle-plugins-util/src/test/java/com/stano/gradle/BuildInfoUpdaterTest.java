@@ -31,7 +31,7 @@ class BuildInfoUpdaterTest {
             .build();
         project.setVersion("1.2.3");
         project.getProjectDir().mkdirs();
-        new File(project.getBuildDir(), "resources/test").mkdirs();
+        new File(project.getLayout().getBuildDirectory().get().getAsFile(), "resources/test").mkdirs();
         new RootExtensionFeature().apply(project);
     }
 
@@ -59,9 +59,9 @@ class BuildInfoUpdaterTest {
         BuildInfoProvider buildInfo = new BuildInfoProvider(environment);
 
         Files.copy(Path.of("src/test/resources/application.yml"),
-            Path.of(project.getBuildDir().getAbsolutePath(), "resources/test/application.yml"));
+            Path.of(project.getLayout().getBuildDirectory().get().getAsFile().getAbsolutePath(), "resources/test/application.yml"));
 
-        String applicationYmlPath = project.getBuildDir().getAbsolutePath() + "/resources/test/application.yml";
+        String applicationYmlPath = project.getLayout().getBuildDirectory().get().getAsFile().getAbsolutePath() + "/resources/test/application.yml";
         BuildInfoUpdater.updateYmlWithBuildInfo(rootExtension, project.getVersion().toString(), buildInfo, applicationYmlPath);
 
         Yaml yaml = new Yaml();
@@ -93,7 +93,7 @@ class BuildInfoUpdaterTest {
         RootExtension rootExtension = mock(RootExtension.class);
         BuildInfoProvider buildInfo = new BuildInfoProvider(environment);
 
-        File applicationYmlFile = new File(project.getBuildDir(), "resources/test/application.yml");
+        File applicationYmlFile = new File(project.getLayout().getBuildDirectory().get().getAsFile(), "resources/test/application.yml");
 
         BuildInfoUpdater.updateYmlWithBuildInfo(rootExtension, project.getVersion().toString(), buildInfo,
             applicationYmlFile.getAbsolutePath());

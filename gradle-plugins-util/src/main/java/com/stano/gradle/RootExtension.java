@@ -140,6 +140,9 @@ public class RootExtension {
    }
 
    public String getBuildTimeFormatted() {
+      if (buildTime == null) {
+         return LocalDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+      }
       return LocalDateTime.parse(buildTime).atOffset(ZoneOffset.UTC).format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
    }
 

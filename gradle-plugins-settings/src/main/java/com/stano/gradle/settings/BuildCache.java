@@ -53,7 +53,8 @@ public class BuildCache {
       return buildCacheType;
     }
 
-    return extraProperties.getOrDefault("com.stano.build-cache.type", "s3").toString();
+    final var type = extraProperties.get("com.stano.build-cache.type");
+    return type != null ? type.toString() : null;
   }
 
   private String getS3Bucket(Map<String, Object> extraProperties) {
@@ -63,7 +64,11 @@ public class BuildCache {
       return s3Bucket;
     }
 
-    return extraProperties.get("com.stano.build-cache.s3.bucket").toString();
+    final var bucket = extraProperties.get("com.stano.build-cache.s3.bucket");
+    if (bucket == null) {
+      throw new IllegalStateException("S3 build cache enabled but com.stano.build-cache.s3.bucket or STANO_BUILD_CACHE_S3_BUCKET not configured");
+    }
+    return bucket.toString();
   }
 
   private String getS3Region(Map<String, Object> extraProperties) {
@@ -73,7 +78,11 @@ public class BuildCache {
       return s3Region;
     }
 
-    return extraProperties.get("com.stano.build-cache.s3.region").toString();
+    final var region = extraProperties.get("com.stano.build-cache.s3.region");
+    if (region == null) {
+      throw new IllegalStateException("S3 build cache enabled but com.stano.build-cache.s3.region or STANO_BUILD_CACHE_S3_REGION not configured");
+    }
+    return region.toString();
   }
 
   private String getAccessKeyId(Map<String, Object> extraProperties) {
@@ -83,7 +92,11 @@ public class BuildCache {
       return accessKeyId;
     }
 
-    return extraProperties.get("com.stano.build-cache.s3.access-key-id").toString();
+    final var keyId = extraProperties.get("com.stano.build-cache.s3.access-key-id");
+    if (keyId == null) {
+      throw new IllegalStateException("S3 build cache enabled but com.stano.build-cache.s3.access-key-id or STANO_BUILD_CACHE_S3_ACCESS_KEY_ID not configured");
+    }
+    return keyId.toString();
   }
 
   private String getSecretAccessKey(Map<String, Object> extraProperties) {
@@ -93,7 +106,11 @@ public class BuildCache {
       return secretAccessKey;
     }
 
-    return extraProperties.get("com.stano.build-cache.s3.secret-access-key").toString();
+    final var secret = extraProperties.get("com.stano.build-cache.s3.secret-access-key");
+    if (secret == null) {
+      throw new IllegalStateException("S3 build cache enabled but com.stano.build-cache.s3.secret-access-key or STANO_BUILD_CACHE_S3_SECRET_ACCESS_KEY not configured");
+    }
+    return secret.toString();
   }
 
   private boolean getPushEnabled(Map<String, Object> extraProperties) {
