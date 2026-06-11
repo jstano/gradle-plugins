@@ -14,19 +14,22 @@ public class JacocoAggregateFeature {
       ConfigurableFileCollection classFiles = project.files();
 
       project.getSubprojects().forEach(sp -> {
-        task.dependsOn(sp.getTasks().named("test"));
+        Task testTask = sp.getTasks().findByName("test");
+        if (testTask != null) {
+          task.dependsOn(testTask);
 
-        Task jacocoTestReport = sp.getTasks().findByName("jacocoTestReport");
-        if (jacocoTestReport != null) {
-          task.dependsOn(jacocoTestReport);
-        }
+          Task jacocoTestReport = sp.getTasks().findByName("jacocoTestReport");
+          if (jacocoTestReport != null) {
+            task.dependsOn(jacocoTestReport);
+          }
 
-        SourceSetContainer sourceSets = sp.getExtensions().findByType(SourceSetContainer.class);
-        if (sourceSets != null) {
-          SourceSet main = sourceSets.findByName("main");
-          if (main != null) {
-            sourceFiles.from(main.getAllSource().getSrcDirs());
-            classFiles.from(main.getOutput());
+          SourceSetContainer sourceSets = sp.getExtensions().findByType(SourceSetContainer.class);
+          if (sourceSets != null) {
+            SourceSet main = sourceSets.findByName("main");
+            if (main != null) {
+              sourceFiles.from(main.getAllSource().getSrcDirs());
+              classFiles.from(main.getOutput());
+            }
           }
         }
       });
