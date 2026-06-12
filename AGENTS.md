@@ -1,49 +1,158 @@
 # gradle-plugins Agent Guidance
 
-## Build and Test
+## Git Rules
+
+**NEVER run `git add`, `git commit`, or `git push`.**
+
+The developer must always perform these operations manually.
+
+---
+
+## Build & Test
 
 ```bash
-./gradlew build          # Build all subprojects
-./gradlew test           # Run all tests with JUnit Platform
-./gradlew sonarqube      # Run SonarQube analysis
-./gradlew :MODULE:build  # Build specific subproject (e.g., :gradle-plugins-test:build)
+./gradlew build                          # build all submodules
+./gradlew test                           # run all tests with JUnit Platform
+./gradlew :gradle-plugins-<name>:build   # build a single submodule
+./gradlew :gradle-plugins-<name>:test    # test a single submodule
+./gradlew spotlessApply                  # auto-fix all Java formatting issues
+./gradlew spotlessCheck                  # verify formatting (runs in CI)
+./gradlew sonarqube                      # run SonarQube analysis
 ```
+
+**Test framework:** JUnit Jupiter 6.1.0. JaCoCo HTML/XML reports are produced automatically after test runs (via `finalizedBy jacocoTestReport`). Never run tests through an IDE runner directly — always use `./gradlew test`.
+
+---
 
 ## Environment Setup
 
-Optional environment variables (can also be set via gradle.properties or extraProperties):
-- `STANO_SONAR_HOST_URL` — SonarQube host
-- `STANO_SONAR_TOKEN` — SonarQube auth token
-- `STANO_MAVEN_URL` — Private Maven repository URL
-- `STANO_MAVEN_USERNAME`, `STANO_MAVEN_PASSWORD` — Maven credentials
-- `STANO_BUILD_CACHE_S3_BUCKET`, `STANO_BUILD_CACHE_S3_REGION`, `STANO_BUILD_CACHE_S3_ACCESS_KEY_ID`, `STANO_BUILD_CACHE_S3_SECRET_ACCESS_KEY` — S3 build cache
+Optional environment variables (can also be set via `gradle.properties` or `extraProperties`):
+
+| Variable | Purpose |
+|---|---|
+| `STANO_SONAR_HOST_URL` | SonarQube host URL |
+| `STANO_SONAR_TOKEN` | SonarQube auth token |
+| `STANO_MAVEN_URL` | Private Maven repository URL |
+| `STANO_MAVEN_USERNAME` / `STANO_MAVEN_PASSWORD` | Maven credentials |
+| `STANO_BUILD_CACHE_S3_BUCKET` / `STANO_BUILD_CACHE_S3_REGION` / `STANO_BUILD_CACHE_S3_ACCESS_KEY_ID` / `STANO_BUILD_CACHE_S3_SECRET_ACCESS_KEY` | S3 remote build cache |
+
+---
+
+## Plugin Map
+
+Each `gradle-plugins-*` submodule is an independently published Gradle plugin. The plugin IDs consumers reference are:
+
+| Plugin ID | Implementation Class | Submodule | Purpose |
+|---|---|---|---|
+| `com.stano.project` | `ProjectPlugin` | `gradle-plugins-project` | Root-project prerequisite. Registers `RootExtension`, adds `jacocoRootReport`. **Must be applied to the root project before any other stano plugin.** |
+| `com.stano.application` | `ApplicationPlugin` | `gradle-plugins-application` | Extends `com.stano.project`. Sets `project.version` from `ProjectVersionProvider`, applies `base` and `jacoco` to all subprojects. |
+| `com.stano.java-module` | `JavaModulePlugin` | `gradle-plugins-java-module` | Core plugin for internal Java/Kotlin modules. Applies java-library, Kotlin JVM, JaCoCo, Spotless (Eclipse formatter). Validates that `com.stano.project` is already on the root. |
+| `com.stano.java-library` | `JavaLibraryPlugin` | `gradle-plugins-java-library` | Extends `com.stano.java-module`. Adds `javadoc` + sources JARs and Maven publishing. |
+| `com.stano.spring-boot` | `SpringBootPlugin` | `gradle-plugins-spring-boot` | Applies `org.springframework.boot`, pins Spring Boot + MSP BOM, names the boot JAR after the root project, registers a `copyOtelJavaagent` task. |
+| `com.stano.sonar` | `SonarPlugin` | `gradle-plugins-sonar` | SonarQube integration. Silently skips (with a warning) when host/token are unconfigured. |
+| `com.stano.settings` | `SettingsPlugin` | `gradle-plugins-settings` | Settings-level plugin. Configures dependency resolution management, S3 build cache, and pins Kotlin JVM plugin version. |
+| `com.stano.docker` | `DockerPlugin` | `gradle-plugins-docker` | Docker build support. |
+| `com.stano.docker-compose` | `DockerComposePlugin` | `gradle-plugins-docker` | Docker Compose support. |
+| `com.stano.docker-run` | `DockerRunPlugin` | `gradle-plugins-docker` | Docker run support. |
+
+**Support libraries (not plugins — consumed by plugin submodules only):**
+
+| Submodule | Purpose |
+|---|---|
+| `gradle-plugins-util` | `PluginFeature` interface, `RootExtension`, `BranchNameProvider`, case-conversion utilities, Jackson/JGit/SnakeYAML wrappers |
+| `gradle-plugins-java-common` | `CompilerUtils` (Java + Kotlin compiler config), `MavenRepositoryUtils` |
+| `gradle-plugins-test` | `BasePluginTest` base class for plugin integration tests |
+| `gradle-plugins-bom` | Aggregator BOM re-exported to consumers. Add new `gradle-plugins-*` submodule JARs here as constraints. |
+
+---
 
 ## Dependency Management
 
-All dependencies are centralized in `buildSrc/src/main/kotlin/com/stano/buildlogic/Dependencies.kt`. When adding a new dependency:
+All versions are centralized in `gradle/libs.versions.toml`. When adding a new dependency:
 
-1. Add the full coordinate string to the `dependencyList`
-2. Reference it via `fullDependency("org.example:artifact")` in build files
+1. Add a version alias under `[versions]` if the library is not version-catalog-managed yet.
+2. Add a library alias under `[libraries]` referencing the version alias.
+3. Reference the alias (e.g., `libs.spotless`) in the relevant `build.gradle.kts`.
 
-**Never hardcode dependency versions in build.gradle.kts files** — use the centralized `fullDependency()` function. Why: version consistency across the monorepo. How: check Dependencies.kt before writing any dependency line.
+**Never hardcode version numbers in `build.gradle.kts` files** — use the version catalog. Check `libs.versions.toml` before writing any dependency line.
 
-## Target Versions
+When adding a new `gradle-plugins-*` submodule, add an `implementation` constraint for its JAR in `gradle-plugins-bom/build.gradle.kts`.
 
-- Java: 21
-- Kotlin: 2.4.0
-- Gradle: 8.14.5
-- Groovy: 3.0.25
+`commons-logging` and `log4j` are globally excluded from all configurations in projects applying `com.stano.java-module`. Do not add them.
+
+---
+
+## Coding Conventions
+
+### Language
+
+- All plugin implementation is **Java 21**. Do not add Kotlin source files to plugin submodules (Kotlin is for Gradle build scripts only).
+- Gradle build scripts are Kotlin DSL (`build.gradle.kts`, `settings.gradle.kts`).
+
+### Package Naming
+
+Root package: `com.stano.gradle`. Subpackages match the submodule's functional domain:
+
+| Package | Submodule / purpose |
+|---|---|
+| `com.stano.gradle` | `gradle-plugins-util` root utilities |
+| `com.stano.gradle.application` | `gradle-plugins-application` |
+| `com.stano.gradle.docker` | `gradle-plugins-docker` |
+| `com.stano.gradle.javacommon` | `gradle-plugins-java-common` |
+| `com.stano.gradle.javalibrary` | `gradle-plugins-java-library` |
+| `com.stano.gradle.javamodule` | `gradle-plugins-java-module` |
+| `com.stano.gradle.plugin.test` | `gradle-plugins-test` |
+| `com.stano.gradle.project` | `gradle-plugins-project` |
+| `com.stano.gradle.settings` | `gradle-plugins-settings` |
+| `com.stano.gradle.sonar` | `gradle-plugins-sonar` |
+| `com.stano.gradle.springboot` | `gradle-plugins-spring-boot` |
+
+Feature classes live in a `.features` subpackage of the plugin's package (e.g., `com.stano.gradle.javamodule.features`).
+
+### Code Style
+
+Enforced by `.editorconfig` and Spotless:
+- 2-space indentation
+- LF line endings, UTF-8 encoding
+- No trailing whitespace, final newline required
+- No wildcard imports (expanded by Spotless `expandWildcardImports()`)
+- No unused imports (removed by Spotless `removeUnusedImports()`)
+
+Run `./gradlew spotlessApply` to auto-fix formatting before committing.
+
+### Design Patterns
+
+**`PluginFeature` interface** (`gradle-plugins-util/.../PluginFeature.java`): all feature decomposition classes implement `void apply(Project project)`. Plugin classes instantiate features with `new XyzFeature().apply(project)` — no DI framework.
+
+**Feature decomposition**: plugin logic is split into small, single-concern `PluginFeature` classes in a `.features` subpackage. Do not put all logic directly in the plugin `apply()` method.
+
+**Applying external plugins from a feature**: use `project.getPlugins().apply(SomePlugin.class)` when the class is on the classpath, or `project.getPlugins().apply("plugin.id")` when only the ID is known.
+
+**Configuring Gradle extensions from a feature**: use `project.getExtensions().configure(SomeExtension.class, ext -> { ... })`.
+
+**`RootExtension`** (`gradle-plugins-util/.../RootExtension.java`): registered on the root project as `"root"`. Carries cross-project config: `javaVersion` (default `"21"`), `mspVersion`, `contextName`, pact broker coordinates, Docker registry coordinates, `branchNameProvider`, `commitHashProvider`, etc. Fetch it in features via `project.getRootProject().getExtensions().getByType(RootExtension.class)`.
+
+**`JavaExtension`** (`gradle-plugins-java-module/.../JavaExtension.java`): registered on each subproject as `"stanoJava"` by `JavaModulePlugin`. Currently a marker interface — the extension point for future per-project java-module configuration.
+
+**Prerequisite enforcement**: `JavaModulePlugin` throws `GradleException` at `apply()` time if `ProjectPlugin` is not already on the root project. Follow this pattern for any plugin that depends on another.
+
+### Test Conventions
+
+- **Class naming**: `<Subject>Test` — e.g., `JavaModulePluginTest`, `ConfigureCompilersFeatureTest`, `RootExtensionTest`
+- **Base class**: plugin integration tests extend `BasePluginTest` (`gradle-plugins-test/.../BasePluginTest.java`), which creates a temp-dir `rootProject` + `childProject` via `ProjectBuilder` and applies `RootExtensionFeature` to the root
+- **Method naming**: long descriptive camelCase sentences — e.g., `applyingThePluginShouldRegisterTheSpotlessTask`
+- **Assertions**: AssertJ (`assertThat(...).isEqualTo(...)`) and JUnit 5 assertions
+- **Mocking**: Mockito 5
+- **Network-dependent tests**: annotate with `@Disabled` if they require Maven resolution or external services
+
+---
 
 ## Critical Constraints
 
-**Do not edit generated files.** Build outputs in `build/`, generated source in `src/generated/` are overwritten by Gradle tasks. Make changes to source files only.
+**Do not edit generated files.** Build outputs in `build/`, generated sources in `src/generated/` are overwritten by Gradle tasks.
 
-**Inactive submodules in settings.gradle.kts are intentionally disabled.** They are commented out to prevent accidental inclusion. Do not uncomment them without explicit user request.
+**Inactive submodules in `settings.gradle.kts` are intentionally disabled.** Do not uncomment them without an explicit user request.
 
-**Test Execution:** All tests use JUnit Platform and must be run via `./gradlew test`, never by IDE test runners directly. JaCoCo reports are auto-generated and required.
+**Plugin publishing is manual** (`isAutomatedPublishing = false`). Do not change this setting or attempt to publish to the Gradle Plugin Portal.
 
-## Context
-
-- This is a monorepo of Gradle plugins (not an application)
-- Each `gradle-plugins-*` submodule is an independently published plugin
-- buildSrc contains shared build logic and dependency definitions for all submodules
+**`gradle-plugins-docker` is excluded from `gradle-plugins-bom`** intentionally. Do not add it back without an explicit user request.

@@ -15,49 +15,50 @@ import java.io.File;
 
 @DisableCachingByDefault(because = "docker compose has no input or outputs")
 public class DockerComposeUp extends DefaultTask {
-    @Internal
-    private Configuration configuration;
+  @Internal private Configuration configuration;
+  @Internal private final ExecOperations execOperations;
 
-    @Internal
-    private final ExecOperations execOperations;
+  public Configuration getConfiguration() {
+    return configuration;
+  }
 
-    public Configuration getConfiguration() {
-        return configuration;
-    }
+  public ExecOperations getExecOperations() {
+    return execOperations;
+  }
 
-    public ExecOperations getExecOperations() {
-        return execOperations;
-    }
+  @Inject
+  public DockerComposeUp(ExecOperations execOperations) {
+    this.setGroup("Docker");
+    this.execOperations = execOperations;
+  }
 
-    @Inject
-    public DockerComposeUp(ExecOperations execOperations) {
-        this.setGroup("Docker");
-        this.execOperations = execOperations;
-    }
-
-    @TaskAction
-    void run() {
-        GradleExecUtils.execWithErrorMessage(getProject(), execOperations, spec -> {
-            spec.executable("docker-compose");
-            spec.args("-f", getDockerComposeFile().getAbsolutePath(), "up", "-d");
+  @TaskAction
+  void run() {
+    GradleExecUtils.execWithErrorMessage(
+        getProject(),
+        execOperations,
+        spec -> {
+          spec.executable("docker-compose");
+          spec.args("-f", getDockerComposeFile().getAbsolutePath(), "up", "-d");
         });
-    }
+  }
 
-    @Internal
-    @Override
-    public String getDescription() {
-        String defaultDescription = "Executes `docker-compose` using " + getDockerComposeFile().getName();
-        return super.getDescription() != null ? super.getDescription() : defaultDescription;
-    }
+  @Internal
+  @Override
+  public String getDescription() {
+    String defaultDescription =
+        "Executes `docker-compose` using " + getDockerComposeFile().getName();
+    return super.getDescription() != null ? super.getDescription() : defaultDescription;
+  }
 
-    @InputFiles
-    @PathSensitive(PathSensitivity.NONE)
-    File getDockerComposeFile() {
-        return getDockerComposeExtension().getDockerComposeFile();
-    }
+  @InputFiles
+  @PathSensitive(PathSensitivity.NONE)
+  File getDockerComposeFile() {
+    return getDockerComposeExtension().getDockerComposeFile();
+  }
 
-    @Internal
-    DockerComposeExtension getDockerComposeExtension() {
-        return getProject().getExtensions().findByType(DockerComposeExtension.class);
-    }
+  @Internal
+  DockerComposeExtension getDockerComposeExtension() {
+    return getProject().getExtensions().findByType(DockerComposeExtension.class);
+  }
 }

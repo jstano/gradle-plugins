@@ -9,7 +9,6 @@ public class ProjectPlugin implements Plugin<Project> {
   @Override
   public void apply(Project project) {
     new RootExtensionFeature().apply(project);
-
     if (project.getRootProject() == project) {
       new JacocoAggregateFeature().apply(project);
     }

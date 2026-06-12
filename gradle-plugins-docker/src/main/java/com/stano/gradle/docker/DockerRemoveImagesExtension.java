@@ -5,8 +5,9 @@ import org.gradle.api.provider.Property;
 import java.util.Collection;
 
 public interface DockerRemoveImagesExtension {
+  Property<Collection<String>> getImages();
 
-   Property<Collection<String>> getImages();
-   Property<Boolean> getForce();
-   Property<Boolean> getNoPrune();
+  Property<Boolean> getForce();
+
+  Property<Boolean> getNoPrune();
 }

@@ -9,23 +9,19 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 public class DockerComponent implements SoftwareComponentInternal {
+  private final Set<PublishArtifact> artifacts = new LinkedHashSet<>();
 
-   private final Set<PublishArtifact> artifacts = new LinkedHashSet<>();
+  public DockerComponent(PublishArtifact dockerArtifact) {
+    artifacts.add(dockerArtifact);
+  }
 
-   public DockerComponent(PublishArtifact dockerArtifact) {
+  @Override
+  public final String getName() {
+    return "docker";
+  }
 
-      artifacts.add(dockerArtifact);
-   }
-
-   @Override
-   public final String getName() {
-
-      return "docker";
-   }
-
-   @Override
-   public final Set<UsageContext> getUsages() {
-
-      return Collections.emptySet();
-   }
+  @Override
+  public final Set<UsageContext> getUsages() {
+    return Collections.emptySet();
+  }
 }

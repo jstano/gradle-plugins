@@ -7,7 +7,7 @@ import org.gradle.jvm.tasks.Jar;
 public class ConfigureArtifactsFeature implements PluginFeature {
   @Override
   public void apply(Project project) {
-    Jar jarTask = (Jar)project.getTasks().getByName("jar");
+    Jar jarTask = (Jar) project.getTasks().getByName("jar");
     jarTask.setZip64(true);
     jarTask.exclude("**/.gitkeep");
   }

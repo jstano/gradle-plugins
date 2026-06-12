@@ -14,34 +14,27 @@ package com.stano.gradle;
  * CI_COMMIT_TIMESTAMP
  */
 public class BuildInfoProvider {
+  private final Environment environment;
 
-   private final Environment environment;
+  public BuildInfoProvider(Environment environment) {
+    this.environment = environment;
+  }
 
-   public BuildInfoProvider(Environment environment) {
+  public String getBuildNumber() {
+    String buildNumber = environment.getEnvironmentVariable("BUILD_NUMBER");
+    return buildNumber != null ? buildNumber : "unspecified";
+  }
 
-      this.environment = environment;
-   }
+  public String getBranchName() {
+    String branchName = environment.getEnvironmentVariable("CHANGE_BRANCH");
+    if (branchName == null) {
+      branchName = environment.getEnvironmentVariable("BRANCH_NAME");
+    }
+    return branchName != null ? branchName : "unspecified";
+  }
 
-   public String getBuildNumber() {
-
-      String buildNumber = environment.getEnvironmentVariable("BUILD_NUMBER");
-      return buildNumber != null ? buildNumber : "unspecified";
-   }
-
-   public String getBranchName() {
-
-      String branchName = environment.getEnvironmentVariable("CHANGE_BRANCH");
-
-      if (branchName == null) {
-         branchName = environment.getEnvironmentVariable("BRANCH_NAME");
-      }
-
-      return branchName != null ? branchName : "unspecified";
-   }
-
-   public String getJobName() {
-
-      String jobName = environment.getEnvironmentVariable("JOB_NAME");
-      return jobName != null ? jobName : "unspecified";
-   }
+  public String getJobName() {
+    String jobName = environment.getEnvironmentVariable("JOB_NAME");
+    return jobName != null ? jobName : "unspecified";
+  }
 }

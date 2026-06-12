@@ -6,14 +6,9 @@ import org.junit.jupiter.params.provider.CsvSource;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class StringUtilsTest {
-    @ParameterizedTest
-    @CsvSource({
-        ",true",
-        "'',true",
-        "' ',true",
-        "' abc ',false"
-    })
-    void isBlankShouldWork(String text, boolean expectedResult) {
-        assertEquals(expectedResult, StringUtils.isBlank(text));
-    }
+  @ParameterizedTest
+  @CsvSource({",true", "'',true", "' ',true", "' abc ',false"})
+  void isBlankShouldWork(String text, boolean expectedResult) {
+    assertEquals(expectedResult, StringUtils.isBlank(text));
+  }
 }

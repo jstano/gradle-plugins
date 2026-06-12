@@ -16,18 +16,15 @@ public class JavaModulePlugin implements Plugin<Project> {
   @Override
   public void apply(Project project) {
     Project rootProject = project.getRootProject();
-
     // Check immediately at apply time
-    boolean hasProjectPlugin = rootProject.getPlugins().stream()
-        .anyMatch(p -> p instanceof ProjectPlugin);
+    boolean hasProjectPlugin =
+        rootProject.getPlugins().stream().anyMatch(p -> p instanceof ProjectPlugin);
     if (!hasProjectPlugin) {
       throw new GradleException(
           "com.stano.java-module requires com.stano.project (or com.stano.application) "
-          + "to be applied to the root project.");
+              + "to be applied to the root project.");
     }
-
     project.getExtensions().create("stanoJava", JavaExtension.class);
-
     new ConfigurePluginsFeature().apply(project);
     new ConfigureSpotlessFeature().apply(project);
     new ConfigureDefaultDependenciesFeature().apply(project);

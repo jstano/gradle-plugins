@@ -6,8 +6,8 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class JavaVersionProviderTest {
-    @Test
-    void currentVersionShouldReturnCurrentJavaVersion() {
-        assertEquals(JavaVersion.current(), new JavaVersionProvider().currentVersion());
-    }
+  @Test
+  void currentVersionShouldReturnCurrentJavaVersion() {
+    assertEquals(JavaVersion.current(), new JavaVersionProvider().currentVersion());
+  }
 }

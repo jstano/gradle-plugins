@@ -14,24 +14,28 @@ import java.util.ArrayList;
 import java.util.List;
 
 final class GradleExecUtils {
-    public static void execWithErrorMessage(Project project, ExecOperations execOperations, Action<ExecSpec> execSpecAction) {
-        List<String> commandLine = new ArrayList<>();
-        ByteArrayOutputStream output = new ByteArrayOutputStream();
-
-       ExecResult execResult = execOperations.exec(execSpec -> {
-           execSpecAction.execute(execSpec);
-           execSpec.setIgnoreExitValue(true);
-           execSpec.setStandardOutput(new TeeOutputStream(System.out, output));
-           execSpec.setErrorOutput(new TeeOutputStream(System.err, output));
-           commandLine.addAll(execSpec.getCommandLine());
-        });
-
-        if (execResult.getExitValue() != 0) {
-            throw new GradleException(String.format(
-                    "The command '%s' failed with exit code %d. Output:\n%s",
-                    commandLine, execResult.getExitValue(), new String(output.toByteArray(), StandardCharsets.UTF_8)));
-        }
+  public static void execWithErrorMessage(
+      Project project, ExecOperations execOperations, Action<ExecSpec> execSpecAction) {
+    List<String> commandLine = new ArrayList<>();
+    ByteArrayOutputStream output = new ByteArrayOutputStream();
+    ExecResult execResult =
+        execOperations.exec(
+            execSpec -> {
+              execSpecAction.execute(execSpec);
+              execSpec.setIgnoreExitValue(true);
+              execSpec.setStandardOutput(new TeeOutputStream(System.out, output));
+              execSpec.setErrorOutput(new TeeOutputStream(System.err, output));
+              commandLine.addAll(execSpec.getCommandLine());
+            });
+    if (execResult.getExitValue() != 0) {
+      throw new GradleException(
+          String.format(
+              "The command '%s' failed with exit code %d. Output:\n%s",
+              commandLine,
+              execResult.getExitValue(),
+              new String(output.toByteArray(), StandardCharsets.UTF_8)));
     }
+  }
 
-    private GradleExecUtils() {}
+  private GradleExecUtils() {}
 }

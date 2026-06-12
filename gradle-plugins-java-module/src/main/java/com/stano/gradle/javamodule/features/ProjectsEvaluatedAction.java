@@ -24,28 +24,38 @@ public class ProjectsEvaluatedAction implements Action<Gradle> {
 
   @Override
   public void execute(Gradle gradle) {
-    DomainObjectSet<ProjectDependency> apiDependencies = project.getConfigurations()
-                                                                .getByName("api")
-                                                                .getAllDependencies()
-                                                                .withType(ProjectDependency.class);
-    DomainObjectSet<ProjectDependency> implementationDependencies = project.getConfigurations()
-                                                                           .getByName("implementation")
-                                                                           .getAllDependencies()
-                                                                           .withType(ProjectDependency.class);
-    List<Project> dependentProjects = Stream.concat(apiDependencies.stream(), implementationDependencies.stream())
-                                            .map(it -> project.project(it.getPath()))
-                                            .toList();
-
-    dependentProjects.forEach(dependentProject -> {
-      SourceSetContainer sourceSetContainer = dependentProject.getExtensions().findByType(SourceSetContainer.class);
-      if (sourceSetContainer != null) {
-        sourceSetContainer.stream().filter(it -> it.getName().equals("main")).findFirst().ifPresent(mainSourceSet -> {
-          SourceDirectorySet javaSrc = mainSourceSet.getAllJava();
-          SourceSetOutput mainOutput = mainSourceSet.getOutput();
-          jacocoReport.additionalSourceDirs(project.files(javaSrc.getSrcDirs()));
-          jacocoReport.additionalClassDirs(mainOutput);
+    DomainObjectSet<ProjectDependency> apiDependencies =
+        project
+            .getConfigurations()
+            .getByName("api")
+            .getAllDependencies()
+            .withType(ProjectDependency.class);
+    DomainObjectSet<ProjectDependency> implementationDependencies =
+        project
+            .getConfigurations()
+            .getByName("implementation")
+            .getAllDependencies()
+            .withType(ProjectDependency.class);
+    List<Project> dependentProjects =
+        Stream.concat(apiDependencies.stream(), implementationDependencies.stream())
+            .map(it -> project.project(it.getPath()))
+            .toList();
+    dependentProjects.forEach(
+        dependentProject -> {
+          SourceSetContainer sourceSetContainer =
+              dependentProject.getExtensions().findByType(SourceSetContainer.class);
+          if (sourceSetContainer != null) {
+            sourceSetContainer.stream()
+                .filter(it -> it.getName().equals("main"))
+                .findFirst()
+                .ifPresent(
+                    mainSourceSet -> {
+                      SourceDirectorySet javaSrc = mainSourceSet.getAllJava();
+                      SourceSetOutput mainOutput = mainSourceSet.getOutput();
+                      jacocoReport.additionalSourceDirs(project.files(javaSrc.getSrcDirs()));
+                      jacocoReport.additionalClassDirs(mainOutput);
+                    });
+          }
         });
-      }
-    });
   }
 }

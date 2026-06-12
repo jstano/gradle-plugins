@@ -12,43 +12,40 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 public abstract class BasePluginTest {
-    protected Project rootProject;
-    protected Project childProject;
+  protected Project rootProject;
+  protected Project childProject;
 
-    @BeforeEach
-    void setupProjects() throws IOException {
-        File tempDir = Files.createTempDirectory("gradle-test").toFile();
-
-        rootProject = ProjectBuilder.builder()
-            .withName("root")
-            .withProjectDir(tempDir)
-            .build();
-        rootProject.setVersion("1.2.3");
-        rootProject.getProjectDir().mkdirs();
-        new RootExtensionFeature().apply(rootProject);
-
-        File childDir = new File(rootProject.getProjectDir(), "child");
-        childDir.mkdirs();
-        childProject = ProjectBuilder.builder()
+  @BeforeEach
+  void setupProjects() throws IOException {
+    File tempDir = Files.createTempDirectory("gradle-test").toFile();
+    rootProject = ProjectBuilder.builder().withName("root").withProjectDir(tempDir).build();
+    rootProject.setVersion("1.2.3");
+    rootProject.getProjectDir().mkdirs();
+    new RootExtensionFeature().apply(rootProject);
+    File childDir = new File(rootProject.getProjectDir(), "child");
+    childDir.mkdirs();
+    childProject =
+        ProjectBuilder.builder()
             .withName("child")
             .withProjectDir(childDir)
             .withParent(rootProject)
             .build();
-        childProject.setVersion("1.2.3");
-        childProject.getProjectDir().mkdirs();
-    }
+    childProject.setVersion("1.2.3");
+    childProject.getProjectDir().mkdirs();
+  }
 
-    @AfterEach
-    void cleanup() throws IOException {
-        Path tempDir = rootProject.getProjectDir().toPath();
-        Files.walk(tempDir)
-            .sorted((a, b) -> b.compareTo(a))
-            .forEach(p -> {
-                try {
-                    Files.delete(p);
-                } catch (IOException e) {
-                    // Ignore
-                }
+  @AfterEach
+  void cleanup() throws IOException {
+    Path tempDir = rootProject.getProjectDir().toPath();
+    Files.walk(tempDir)
+        .sorted((a, b) -> b.compareTo(a))
+        .forEach(
+            p -> {
+              try {
+                Files.delete(p);
+              } catch (IOException e) {
+                // Ignore
+              }
             });
-    }
+  }
 }

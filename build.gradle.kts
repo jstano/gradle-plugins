@@ -8,12 +8,6 @@ plugins {
   id("com.diffplug.spotless") version libs.versions.spotless
 }
 
-spotless {
-  java {
-    eclipse().configFile("eclipse-java-format.xml")
-//    palantirJavaFormat()
-  }
-}
 
 sonar {
   val extraProperties = extensions.extraProperties.properties
@@ -38,6 +32,23 @@ subprojects {
   apply(plugin = "java-library")
   apply(plugin = "maven-publish")
   apply(plugin = "jacoco")
+  apply(plugin = "com.diffplug.spotless")
+
+  extensions.configure(com.diffplug.gradle.spotless.SpotlessExtension::class.java) {
+    java {
+//      palantirJavaFormat()
+      googleJavaFormat()
+//      eclipse().configFile(rootProject.file("eclipse-java-format.xml"))
+      expandWildcardImports()
+      removeUnusedImports()
+      trimTrailingWhitespace()
+      endWithNewline()
+    }
+  }
+
+  tasks.named("check") {
+    dependsOn("spotlessCheck")
+  }
 
   dependencies {
     implementation(gradleApi())

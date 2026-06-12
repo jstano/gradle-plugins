@@ -31,12 +31,10 @@ public class GradlePluginUtil {
   public static <T> T getProperty(Project project, String propertyName) {
     while (project != null) {
       if (project.hasProperty(propertyName)) {
-        return (T)project.property(propertyName);
+        return (T) project.property(propertyName);
       }
-
       project = project.getParent();
     }
-
     return null;
   }
 
@@ -44,11 +42,11 @@ public class GradlePluginUtil {
     return getProjectProperty(project, propertyName, null);
   }
 
-  public static String getProjectProperty(Project project, String propertyName, String defaultValue) {
+  public static String getProjectProperty(
+      Project project, String propertyName, String defaultValue) {
     if (project.hasProperty(propertyName)) {
       return project.findProperty(propertyName).toString();
     }
-
     return defaultValue;
   }
 
@@ -56,19 +54,17 @@ public class GradlePluginUtil {
     return getProjectOrSystemProperty(project, propertyName, null);
   }
 
-  public static String getProjectOrSystemProperty(Project project, String propertyName, String defaultValue) {
+  public static String getProjectOrSystemProperty(
+      Project project, String propertyName, String defaultValue) {
     if (project.hasProperty(propertyName)) {
       return project.findProperty(propertyName).toString();
     }
-
     if (System.getProperty(propertyName) != null) {
       return System.getProperty(propertyName);
     }
-
     if (System.getenv(ConstantCase.constantCase(propertyName)) != null) {
       return System.getenv(ConstantCase.constantCase(propertyName));
     }
-
     return defaultValue;
   }
 
@@ -83,8 +79,7 @@ public class GradlePluginUtil {
   public static String getHostName() {
     try {
       return InetAddress.getLocalHost().getHostName();
-    }
-    catch (UnknownHostException x) {
+    } catch (UnknownHostException x) {
       return "UNKNOWN_HOST";
     }
   }
@@ -94,8 +89,7 @@ public class GradlePluginUtil {
       try (OutputStream outputStream = new FileOutputStream(outputFile)) {
         IOGroovyMethods.leftShift(outputStream, inputStream);
       }
-    }
-    catch (IOException x) {
+    } catch (IOException x) {
       throw new RuntimeException(x);
     }
   }
@@ -104,8 +98,7 @@ public class GradlePluginUtil {
     Task result;
     try {
       result = tasks.getByName(taskName);
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       result = tasks.register(taskName).get();
     }
     return result;
@@ -114,25 +107,22 @@ public class GradlePluginUtil {
   public static String getNestedProjectName(Project project) {
     Project rootProject = project.getRootProject();
     String extensionContextName = null;
-
     try {
       RootExtension rootRootExtension = rootProject.getExtensions().getByType(RootExtension.class);
       extensionContextName = rootRootExtension.getContextName();
+    } catch (Exception ex) {
+      project
+          .getLogger()
+          .lifecycle("RootExtension contextName not found on project: " + project.getName());
     }
-    catch (Exception ex) {
-      project.getLogger().lifecycle("RootExtension contextName not found on project: " + project.getName());
-    }
-
-    String rootProjectName = extensionContextName == null
-                             ? rootProject.getName().toLowerCase()
-                             : extensionContextName.toLowerCase();
-
+    String rootProjectName =
+        extensionContextName == null
+            ? rootProject.getName().toLowerCase()
+            : extensionContextName.toLowerCase();
     String projectName = project.getName().toLowerCase();
-
     if (rootProjectName.equals(projectName)) {
       return projectName;
     }
-
     return String.format("%s-%s", rootProjectName, projectName);
   }
 }

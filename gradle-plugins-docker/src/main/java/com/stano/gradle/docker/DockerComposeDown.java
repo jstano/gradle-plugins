@@ -15,42 +15,42 @@ import java.io.File;
 
 @DisableCachingByDefault(because = "docker compose has no input or outputs")
 public class DockerComposeDown extends DefaultTask {
-    @Internal
-    private Configuration configuration;
+  @Internal private Configuration configuration;
+  @Internal private final ExecOperations execOperations;
 
-    @Internal
-    private final ExecOperations execOperations;
+  public Configuration getConfiguration() {
+    return configuration;
+  }
 
-    public Configuration getConfiguration() {
-        return configuration;
-    }
+  public ExecOperations getExecOperations() {
+    return execOperations;
+  }
 
-    public ExecOperations getExecOperations() {
-        return execOperations;
-    }
+  @Inject
+  public DockerComposeDown(ExecOperations execOperations) {
+    this.setGroup("Docker");
+    this.execOperations = execOperations;
+  }
 
-    @Inject
-    public DockerComposeDown(ExecOperations execOperations) {
-        this.setGroup("Docker");
-        this.execOperations = execOperations;
-    }
-
-    @TaskAction
-    void run() {
-        GradleExecUtils.execWithErrorMessage(getProject(), execOperations, spec -> {
-            spec.executable("docker-compose");
-            spec.args("-f", getDockerComposeFile().getAbsolutePath(), "down");
+  @TaskAction
+  void run() {
+    GradleExecUtils.execWithErrorMessage(
+        getProject(),
+        execOperations,
+        spec -> {
+          spec.executable("docker-compose");
+          spec.args("-f", getDockerComposeFile().getAbsolutePath(), "down");
         });
-    }
+  }
 
-    @InputFiles
-    @PathSensitive(PathSensitivity.NONE)
-    File getDockerComposeFile() {
-        return getDockerComposeExtension().getDockerComposeFile();
-    }
+  @InputFiles
+  @PathSensitive(PathSensitivity.NONE)
+  File getDockerComposeFile() {
+    return getDockerComposeExtension().getDockerComposeFile();
+  }
 
-    @Internal
-    DockerComposeExtension getDockerComposeExtension() {
-        return getProject().getExtensions().findByType(DockerComposeExtension.class);
-    }
+  @Internal
+  DockerComposeExtension getDockerComposeExtension() {
+    return getProject().getExtensions().findByType(DockerComposeExtension.class);
+  }
 }

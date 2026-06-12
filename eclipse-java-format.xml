@@ -3,8 +3,8 @@
 	<profile kind="CodeFormatterProfile" name="stano" version="21">
 		<setting id="org.eclipse.jdt.core.formatter.tabulation.char" value="space"/>
 		<setting id="org.eclipse.jdt.core.formatter.use_tabs_only_for_leading_indentations" value="false"/>
-		<setting id="org.eclipse.jdt.core.formatter.indentation.size" value="3"/>
-		<setting id="org.eclipse.jdt.core.formatter.tabulation.size" value="3"/>
+		<setting id="org.eclipse.jdt.core.formatter.indentation.size" value="2"/>
+		<setting id="org.eclipse.jdt.core.formatter.tabulation.size" value="2"/>
 		<setting id="org.eclipse.jdt.core.formatter.text_block_indentation" value="0"/>
 		<setting id="org.eclipse.jdt.core.formatter.indent_body_declarations_compare_to_type_header" value="true"/>
 		<setting id="org.eclipse.jdt.core.formatter.indent_body_declarations_compare_to_enum_declaration_header" value="true"/>
@@ -235,7 +235,7 @@
 		<setting id="org.eclipse.jdt.core.formatter.insert_space_after_and_in_type_parameter" value="insert"/>
 		<setting id="org.eclipse.jdt.core.formatter.insert_space_before_question_in_wildcard" value="do not insert"/>
 		<setting id="org.eclipse.jdt.core.formatter.insert_space_after_question_in_wildcard" value="do not insert"/>
-		<setting id="org.eclipse.jdt.core.formatter.number_of_empty_lines_to_preserve" value="2"/>
+		<setting id="org.eclipse.jdt.core.formatter.number_of_empty_lines_to_preserve" value="0"/>
 		<setting id="org.eclipse.jdt.core.formatter.blank_lines_before_package" value="0"/>
 		<setting id="org.eclipse.jdt.core.formatter.blank_lines_after_package" value="1"/>
 		<setting id="org.eclipse.jdt.core.formatter.blank_lines_before_imports" value="1"/>
@@ -253,9 +253,9 @@
 		<setting id="org.eclipse.jdt.core.formatter.insert_new_line_after_opening_brace_in_array_initializer" value="do not insert"/>
 		<setting id="org.eclipse.jdt.core.formatter.insert_new_line_before_closing_brace_in_array_initializer" value="do not insert"/>
 		<setting id="org.eclipse.jdt.core.formatter.insert_new_line_at_end_of_file_if_missing" value="do not insert"/>
-		<setting id="org.eclipse.jdt.core.formatter.insert_new_line_before_else_in_if_statement" value="insert"/>
-		<setting id="org.eclipse.jdt.core.formatter.insert_new_line_before_catch_in_try_statement" value="insert"/>
-		<setting id="org.eclipse.jdt.core.formatter.insert_new_line_before_finally_in_try_statement" value="insert"/>
+		<setting id="org.eclipse.jdt.core.formatter.insert_new_line_before_else_in_if_statement" value="do not insert"/>
+		<setting id="org.eclipse.jdt.core.formatter.insert_new_line_before_catch_in_try_statement" value="do not insert"/>
+		<setting id="org.eclipse.jdt.core.formatter.insert_new_line_before_finally_in_try_statement" value="do not insert"/>
 		<setting id="org.eclipse.jdt.core.formatter.insert_new_line_before_while_in_do_statement" value="do not insert"/>
 		<setting id="org.eclipse.jdt.core.formatter.insert_new_line_after_label" value="insert"/>
 		<setting id="org.eclipse.jdt.core.formatter.keep_then_statement_on_same_line" value="false"/>
@@ -286,7 +286,7 @@
 		<setting id="org.eclipse.jdt.core.formatter.keep_record_declaration_on_one_line" value="one_line_never"/>
 		<setting id="org.eclipse.jdt.core.formatter.keep_record_constructor_on_one_line" value="one_line_never"/>
 		<setting id="org.eclipse.jdt.core.formatter.keep_annotation_declaration_on_one_line" value="one_line_never"/>
-		<setting id="org.eclipse.jdt.core.formatter.lineSplit" value="150"/>
+		<setting id="org.eclipse.jdt.core.formatter.lineSplit" value="100"/>
 		<setting id="org.eclipse.jdt.core.formatter.continuation_indentation" value="1"/>
 		<setting id="org.eclipse.jdt.core.formatter.continuation_indentation_for_array_initializer" value="1"/>
 		<setting id="org.eclipse.jdt.core.formatter.join_wrapped_lines" value="false"/>
@@ -306,6 +306,7 @@
 		<setting id="org.eclipse.jdt.core.formatter.alignment_for_superinterfaces_in_record_declaration" value="18"/>
 		<setting id="org.eclipse.jdt.core.formatter.alignment_for_arguments_in_method_invocation" value="82"/>
 		<setting id="org.eclipse.jdt.core.formatter.alignment_for_selector_in_method_invocation" value="82"/>
+    <setting id="org.eclipse.jdt.core.formatter.wrap_before_dot" value="true"/>
 		<setting id="org.eclipse.jdt.core.formatter.alignment_for_arguments_in_explicit_constructor_call" value="82"/>
 		<setting id="org.eclipse.jdt.core.formatter.alignment_for_arguments_in_allocation_expression" value="82"/>
 		<setting id="org.eclipse.jdt.core.formatter.alignment_for_arguments_in_qualified_allocation_expression" value="82"/>
@@ -350,7 +351,7 @@
 		<setting id="org.eclipse.jdt.core.formatter.alignment_for_type_annotations" value="0"/>
 		<setting id="org.eclipse.jdt.core.formatter.alignment_for_arguments_in_annotation" value="2"/>
 		<setting id="org.eclipse.jdt.core.formatter.alignment_for_module_statements" value="0"/>
-		<setting id="org.eclipse.jdt.core.formatter.comment.line_length" value="150"/>
+		<setting id="org.eclipse.jdt.core.formatter.comment.line_length" value="100"/>
 		<setting id="org.eclipse.jdt.core.formatter.comment.count_line_length_from_starting_position" value="false"/>
 		<setting id="org.eclipse.jdt.core.formatter.comment.format_javadoc_comments" value="true"/>
 		<setting id="org.eclipse.jdt.core.formatter.comment.format_block_comments" value="false"/>

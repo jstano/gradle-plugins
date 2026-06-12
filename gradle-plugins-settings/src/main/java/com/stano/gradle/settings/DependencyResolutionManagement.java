@@ -14,35 +14,45 @@ public class DependencyResolutionManagement {
 
   public void configureDependencyResolutionManagement(Settings settings) {
     final var properties = settings.getExtensions().getExtraProperties().getProperties();
-    final var stanoMavenUrl = properties.containsKey(STANO_MAVEN_URL_PROPERTY)
-                              ? properties.get(STANO_MAVEN_URL_PROPERTY).toString()
-                              : System.getenv(STANO_MAVEN_URL_ENVIRONMENT);
-
+    final var stanoMavenUrl =
+        properties.containsKey(STANO_MAVEN_URL_PROPERTY)
+            ? properties.get(STANO_MAVEN_URL_PROPERTY).toString()
+            : System.getenv(STANO_MAVEN_URL_ENVIRONMENT);
     if (stanoMavenUrl == null) {
-      throw new IllegalStateException("Private Maven repository URL not configured. "
-          + "Set " + STANO_MAVEN_URL_PROPERTY + " property or " + STANO_MAVEN_URL_ENVIRONMENT + " environment variable.");
+      throw new IllegalStateException(
+          "Private Maven repository URL not configured. "
+              + "Set "
+              + STANO_MAVEN_URL_PROPERTY
+              + " property or "
+              + STANO_MAVEN_URL_ENVIRONMENT
+              + " environment variable.");
     }
-
-    settings.getDependencyResolutionManagement().repositories(repositories -> {
-      repositories.mavenLocal();
-      repositories.mavenCentral();
-      repositories.maven(mavenArtifactRepository -> {
-        configureCredentials(settings, mavenArtifactRepository);
-
-        mavenArtifactRepository.setName("stano-maven");
-        mavenArtifactRepository.setUrl(stanoMavenUrl);
-      });
-    });
+    settings
+        .getDependencyResolutionManagement()
+        .repositories(
+            repositories -> {
+              repositories.mavenLocal();
+              repositories.mavenCentral();
+              repositories.maven(
+                  mavenArtifactRepository -> {
+                    configureCredentials(settings, mavenArtifactRepository);
+                    mavenArtifactRepository.setName("stano-maven");
+                    mavenArtifactRepository.setUrl(stanoMavenUrl);
+                  });
+            });
   }
 
-  private void configureCredentials(Settings settings, MavenArtifactRepository mavenArtifactRepository) {
+  private void configureCredentials(
+      Settings settings, MavenArtifactRepository mavenArtifactRepository) {
     final var properties = settings.getExtensions().getExtraProperties().getProperties();
-    final var stanoMavenUsername = properties.containsKey(STANO_MAVEN_USERNAME_PROPERTY)
-                                     ? properties.get(STANO_MAVEN_USERNAME_PROPERTY).toString()
-                                     : System.getenv(STANO_MAVEN_USERNAME_ENVIRONMENT);
-    final var stanoMavenPassword = properties.containsKey(STANO_MAVEN_PASSWORD_PROPERTY)
-                                   ? properties.get(STANO_MAVEN_PASSWORD_PROPERTY).toString()
-                                   : System.getenv(STANO_MAVEN_PASSWORD_ENVIRONMENT);
+    final var stanoMavenUsername =
+        properties.containsKey(STANO_MAVEN_USERNAME_PROPERTY)
+            ? properties.get(STANO_MAVEN_USERNAME_PROPERTY).toString()
+            : System.getenv(STANO_MAVEN_USERNAME_ENVIRONMENT);
+    final var stanoMavenPassword =
+        properties.containsKey(STANO_MAVEN_PASSWORD_PROPERTY)
+            ? properties.get(STANO_MAVEN_PASSWORD_PROPERTY).toString()
+            : System.getenv(STANO_MAVEN_PASSWORD_ENVIRONMENT);
     final var credentials = mavenArtifactRepository.getCredentials(PasswordCredentials.class);
     credentials.setUsername(stanoMavenUsername);
     credentials.setPassword(stanoMavenPassword);

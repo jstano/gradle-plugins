@@ -15,198 +15,200 @@ import java.util.Map;
 import java.util.Set;
 
 public class DockerExtension {
-    private static final String DEFAULT_DOCKERFILE_PATH = "Dockerfile";
+  private static final String DEFAULT_DOCKERFILE_PATH = "Dockerfile";
+  private Project project;
+  private String name;
+  private File dockerfile;
+  private Set<Task> dependencies = ImmutableSet.of();
+  private Set<String> tags = ImmutableSet.of();
+  private Map<String, String> namedTags = new HashMap<>();
+  private Map<String, String> labels = ImmutableMap.of();
+  private Map<String, String> buildArgs = ImmutableMap.of();
+  private boolean pull = false;
+  private boolean noCache = false;
+  private String network;
+  private boolean buildx = true;
+  private Set<String> platform = ImmutableSet.of();
+  private boolean load = false;
+  private boolean push = false;
+  private String builder;
+  private File resolvedDockerfile;
+  private File resolvedDockerComposeTemplate;
+  private File resolvedDockerComposeFile;
+  private final CopySpec copySpec;
 
-    private Project project;
-    private String name;
-    private File dockerfile;
-    private Set<Task> dependencies = ImmutableSet.of();
-    private Set<String> tags = ImmutableSet.of();
-    private Map<String, String> namedTags = new HashMap<>();
-    private Map<String, String> labels = ImmutableMap.of();
-    private Map<String, String> buildArgs = ImmutableMap.of();
-    private boolean pull = false;
-    private boolean noCache = false;
-    private String network;
-    private boolean buildx = true;
-    private Set<String> platform = ImmutableSet.of();
-    private boolean load = false;
-    private boolean push = false;
-    private String builder;
+  public DockerExtension(Project project) {
+    this.project = project;
+    this.copySpec = project.copySpec();
+  }
 
-    private File resolvedDockerfile;
-    private File resolvedDockerComposeTemplate;
-    private File resolvedDockerComposeFile;
+  public void setName(String name) {
+    this.name = name;
+  }
 
-    private final CopySpec copySpec;
+  public String getName() {
+    Preconditions.checkArgument(
+        !Strings.isNullOrEmpty(name), "name is a required docker configuration item.");
+    return name;
+  }
 
-    public DockerExtension(Project project) {
-        this.project = project;
-        this.copySpec = project.copySpec();
+  public void setDockerfile(File dockerfile) {
+    this.dockerfile = dockerfile;
+  }
+
+  public void setDockerComposeTemplate(String dockerComposeTemplate) {
+    this.resolvedDockerComposeTemplate = project.file(dockerComposeTemplate);
+    Preconditions.checkArgument(
+        project.file(dockerComposeTemplate).exists(),
+        "Could not find specified template file: %s",
+        project.file(dockerComposeTemplate));
+  }
+
+  public void setDockerComposeFile(String dockerComposeFile) {
+    this.resolvedDockerComposeFile = project.file(dockerComposeFile);
+  }
+
+  public void dependsOn(Task... args) {
+    this.dependencies = ImmutableSet.copyOf(args);
+  }
+
+  public Set<Task> getDependencies() {
+    return dependencies;
+  }
+
+  public void files(Object... files) {
+    copySpec.from(files);
+  }
+
+  public Set<String> getTags() {
+    String versionTag = project.getVersion().toString();
+    if (versionTag != null
+        && !versionTag.isEmpty()
+        && !versionTag.contains(":")
+        && !versionTag.contains("/")) {
+      return Sets.union(this.tags, ImmutableSet.of(versionTag));
     }
+    return ImmutableSet.copyOf(this.tags);
+  }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+  @Deprecated
+  public void tags(String... args) {
+    this.tags = ImmutableSet.copyOf(args);
+  }
 
-    public String getName() {
-        Preconditions.checkArgument(!Strings.isNullOrEmpty(name), "name is a required docker configuration item.");
-        return name;
-    }
+  public Map<String, String> getNamedTags() {
+    return ImmutableMap.copyOf(namedTags);
+  }
 
-    public void setDockerfile(File dockerfile) {
-        this.dockerfile = dockerfile;
+  public void tag(String taskName, String tag) {
+    if (namedTags.putIfAbsent(taskName, tag) != null) {
+      System.err.println("WARNING: Task name '" + taskName + "' is existed.");
     }
+  }
 
-    public void setDockerComposeTemplate(String dockerComposeTemplate) {
-        this.resolvedDockerComposeTemplate = project.file(dockerComposeTemplate);
-        Preconditions.checkArgument(
-            project.file(dockerComposeTemplate).exists(),
-            "Could not find specified template file: %s", project.file(dockerComposeTemplate));
-    }
+  public Map<String, String> getLabels() {
+    return labels;
+  }
 
-    public void setDockerComposeFile(String dockerComposeFile) {
-        this.resolvedDockerComposeFile = project.file(dockerComposeFile);
-    }
+  public void labels(Map<String, String> labels) {
+    this.labels = ImmutableMap.copyOf(labels);
+  }
 
-    public void dependsOn(Task... args) {
-        this.dependencies = ImmutableSet.copyOf(args);
-    }
+  public File getResolvedDockerfile() {
+    return resolvedDockerfile;
+  }
 
-    public Set<Task> getDependencies() {
-        return dependencies;
-    }
+  public File getResolvedDockerComposeTemplate() {
+    return resolvedDockerComposeTemplate;
+  }
 
-    public void files(Object... files) {
-        copySpec.from(files);
-    }
+  public File getResolvedDockerComposeFile() {
+    return resolvedDockerComposeFile;
+  }
 
-    public Set<String> getTags() {
-        String versionTag = project.getVersion().toString();
-        if (versionTag != null && !versionTag.isEmpty() && !versionTag.contains(":") && !versionTag.contains("/")) {
-            return Sets.union(this.tags, ImmutableSet.of(versionTag));
-        }
-        return ImmutableSet.copyOf(this.tags);
-    }
+  public CopySpec getCopySpec() {
+    return copySpec;
+  }
 
-    @Deprecated
-    public void tags(String... args) {
-        this.tags = ImmutableSet.copyOf(args);
+  public void resolvePathsAndValidate() {
+    if (dockerfile != null) {
+      resolvedDockerfile = dockerfile;
+    } else {
+      resolvedDockerfile = project.file(DEFAULT_DOCKERFILE_PATH);
     }
+    resolvedDockerComposeFile = project.file("docker-compose.yml");
+    resolvedDockerComposeTemplate = project.file("docker-compose.yml.template");
+  }
 
-    public Map<String, String> getNamedTags() {
-        return ImmutableMap.copyOf(namedTags);
-    }
+  public Map<String, String> getBuildArgs() {
+    return buildArgs;
+  }
 
-    public void tag(String taskName, String tag) {
-        if (namedTags.putIfAbsent(taskName, tag) != null) {
-            System.err.println("WARNING: Task name '" + taskName + "' is existed.");
-        }
-    }
+  public String getNetwork() {
+    return network;
+  }
 
-    public Map<String, String> getLabels() {
-        return labels;
-    }
+  public void setNetwork(String network) {
+    this.network = network;
+  }
 
-    public void labels(Map<String, String> labels) {
-        this.labels = ImmutableMap.copyOf(labels);
-    }
+  public void buildArgs(Map<String, String> buildArgs) {
+    this.buildArgs = ImmutableMap.copyOf(buildArgs);
+  }
 
-    public File getResolvedDockerfile() {
-        return resolvedDockerfile;
-    }
+  public boolean getPull() {
+    return pull;
+  }
 
-    public File getResolvedDockerComposeTemplate() {
-        return resolvedDockerComposeTemplate;
-    }
+  public void pull(boolean pull) {
+    this.pull = pull;
+  }
 
-    public File getResolvedDockerComposeFile() {
-        return resolvedDockerComposeFile;
-    }
+  public boolean getNoCache() {
+    return noCache;
+  }
 
-    public CopySpec getCopySpec() {
-        return copySpec;
-    }
+  public void noCache(boolean noCache) {
+    this.noCache = noCache;
+  }
 
-    public void resolvePathsAndValidate() {
-        if (dockerfile != null) {
-            resolvedDockerfile = dockerfile;
-        } else {
-            resolvedDockerfile = project.file(DEFAULT_DOCKERFILE_PATH);
-        }
-        resolvedDockerComposeFile = project.file("docker-compose.yml");
-        resolvedDockerComposeTemplate = project.file("docker-compose.yml.template");
-    }
+  public boolean getLoad() {
+    return load;
+  }
 
-    public Map<String, String> getBuildArgs() {
-        return buildArgs;
-    }
+  public void load(boolean load) {
+    this.load = load;
+  }
 
-    public String getNetwork() {
-        return network;
-    }
+  public boolean getPush() {
+    return push;
+  }
 
-    public void setNetwork(String network) {
-        this.network = network;
-    }
+  public void push(boolean push) {
+    this.push = push;
+  }
 
-    public void buildArgs(Map<String, String> buildArgs) {
-        this.buildArgs = ImmutableMap.copyOf(buildArgs);
-    }
+  public boolean getBuildx() {
+    return buildx;
+  }
 
-    public boolean getPull() {
-        return pull;
-    }
+  public void buildx(boolean buildx) {
+    this.buildx = buildx;
+  }
 
-    public void pull(boolean pull) {
-        this.pull = pull;
-    }
+  public Set<String> getPlatform() {
+    return platform;
+  }
 
-    public boolean getNoCache() {
-        return noCache;
-    }
+  public void platform(String... args) {
+    this.platform = ImmutableSet.copyOf(args);
+  }
 
-    public void noCache(boolean noCache) {
-        this.noCache = noCache;
-    }
+  public String getBuilder() {
+    return builder;
+  }
 
-    public boolean getLoad() {
-        return load;
-    }
-
-    public void load(boolean load) {
-        this.load = load;
-    }
-
-    public boolean getPush() {
-        return push;
-    }
-
-    public void push(boolean push) {
-        this.push = push;
-    }
-
-    public boolean getBuildx() {
-        return buildx;
-    }
-
-    public void buildx(boolean buildx) {
-        this.buildx = buildx;
-    }
-
-    public Set<String> getPlatform() {
-        return platform;
-    }
-
-    public void platform(String... args) {
-        this.platform = ImmutableSet.copyOf(args);
-    }
-
-    public String getBuilder() {
-        return builder;
-    }
-
-    public void builder(String builder) {
-        this.builder = builder;
-    }
+  public void builder(String builder) {
+    this.builder = builder;
+  }
 }
