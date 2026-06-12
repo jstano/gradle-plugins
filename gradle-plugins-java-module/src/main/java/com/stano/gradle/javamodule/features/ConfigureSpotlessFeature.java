@@ -26,7 +26,6 @@ public class ConfigureSpotlessFeature implements PluginFeature {
                     File configFile = extractEclipseConfigFile();
                     if (configFile.canRead()) {
                       java.googleJavaFormat();
-                      //                      java.eclipse().configFile(configFile);
                       java.removeUnusedImports();
                       java.expandWildcardImports();
                       java.trimTrailingWhitespace();
