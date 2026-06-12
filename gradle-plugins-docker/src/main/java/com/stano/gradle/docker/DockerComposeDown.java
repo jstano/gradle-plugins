@@ -1,5 +1,7 @@
 package com.stano.gradle.docker;
 
+import java.io.File;
+import javax.inject.Inject;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.tasks.InputFiles;
@@ -9,9 +11,6 @@ import org.gradle.api.tasks.PathSensitivity;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.process.ExecOperations;
 import org.gradle.work.DisableCachingByDefault;
-
-import javax.inject.Inject;
-import java.io.File;
 
 @DisableCachingByDefault(because = "docker compose has no input or outputs")
 public class DockerComposeDown extends DefaultTask {

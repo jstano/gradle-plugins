@@ -1,10 +1,10 @@
 package com.stano.gradle;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.stano.gradle.plugin.test.BasePluginTest;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Disabled
 class GradlePluginsTest extends BasePluginTest {

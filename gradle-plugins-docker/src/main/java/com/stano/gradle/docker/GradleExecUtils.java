@@ -1,5 +1,9 @@
 package com.stano.gradle.docker;
 
+import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.tools.ant.util.TeeOutputStream;
 import org.gradle.api.Action;
 import org.gradle.api.GradleException;
@@ -7,11 +11,6 @@ import org.gradle.api.Project;
 import org.gradle.process.ExecOperations;
 import org.gradle.process.ExecResult;
 import org.gradle.process.ExecSpec;
-
-import java.io.ByteArrayOutputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 
 final class GradleExecUtils {
   public static void execWithErrorMessage(

@@ -1,14 +1,13 @@
 package com.stano.gradle;
 
-import org.gradle.api.GradleException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.yaml.snakeyaml.Yaml;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import org.gradle.api.GradleException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.yaml.snakeyaml.Yaml;
 
 public class BuildInfoUpdater {
   private static final Logger LOGGER = LoggerFactory.getLogger(BuildInfoUpdater.class);

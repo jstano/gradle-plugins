@@ -1,7 +1,5 @@
 package com.stano.gradle;
 
-import org.gradle.api.GradleException;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -11,6 +9,7 @@ import java.io.IOException;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.gradle.api.GradleException;
 
 public class IOUtils {
   public static <T> T withReader(File file, Function<BufferedReader, T> function) {

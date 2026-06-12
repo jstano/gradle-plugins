@@ -1,8 +1,7 @@
 package com.stano.gradle;
 
-import org.gradle.api.Project;
-
 import java.io.Serializable;
+import org.gradle.api.Project;
 
 public class ProjectVersionProvider implements Serializable {
   private final transient Project project;

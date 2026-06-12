@@ -1,12 +1,11 @@
 package com.stano.gradle.docker;
 
-import org.gradle.api.artifacts.PublishArtifact;
-import org.gradle.api.internal.component.SoftwareComponentInternal;
-import org.gradle.api.internal.component.UsageContext;
-
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import org.gradle.api.artifacts.PublishArtifact;
+import org.gradle.api.internal.component.SoftwareComponentInternal;
+import org.gradle.api.internal.component.UsageContext;
 
 public class DockerComponent implements SoftwareComponentInternal {
   private final Set<PublishArtifact> artifacts = new LinkedHashSet<>();

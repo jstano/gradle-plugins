@@ -1,14 +1,13 @@
 package com.stano.gradle;
 
-import org.gradle.api.GradleException;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import org.gradle.api.GradleException;
+import org.junit.jupiter.api.Test;
 
 class JsonReaderTest {
   @Test

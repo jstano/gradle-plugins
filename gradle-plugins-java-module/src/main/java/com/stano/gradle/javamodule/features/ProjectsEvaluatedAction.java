@@ -1,5 +1,7 @@
 package com.stano.gradle.javamodule.features;
 
+import java.util.List;
+import java.util.stream.Stream;
 import org.gradle.api.Action;
 import org.gradle.api.DomainObjectSet;
 import org.gradle.api.Project;
@@ -9,9 +11,6 @@ import org.gradle.api.invocation.Gradle;
 import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.SourceSetOutput;
 import org.gradle.testing.jacoco.tasks.JacocoReport;
-
-import java.util.List;
-import java.util.stream.Stream;
 
 public class ProjectsEvaluatedAction implements Action<Gradle> {
   private final Project project;

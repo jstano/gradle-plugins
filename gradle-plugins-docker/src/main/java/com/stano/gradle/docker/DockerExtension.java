@@ -5,14 +5,13 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-import org.gradle.api.Project;
-import org.gradle.api.Task;
-import org.gradle.api.file.CopySpec;
-
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import org.gradle.api.Project;
+import org.gradle.api.Task;
+import org.gradle.api.file.CopySpec;
 
 public class DockerExtension {
   private static final String DEFAULT_DOCKERFILE_PATH = "Dockerfile";

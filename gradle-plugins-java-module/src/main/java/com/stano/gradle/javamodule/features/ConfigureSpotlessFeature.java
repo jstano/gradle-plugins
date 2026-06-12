@@ -2,8 +2,6 @@ package com.stano.gradle.javamodule.features;
 
 import com.diffplug.gradle.spotless.SpotlessExtension;
 import com.stano.gradle.PluginFeature;
-import org.gradle.api.Project;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,6 +9,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import org.gradle.api.Project;
 
 public class ConfigureSpotlessFeature implements PluginFeature {
   @Override
@@ -25,11 +24,12 @@ public class ConfigureSpotlessFeature implements PluginFeature {
                   java -> {
                     File configFile = extractEclipseConfigFile();
                     if (configFile.canRead()) {
-                      java.googleJavaFormat();
-                      java.removeUnusedImports();
-                      java.expandWildcardImports();
-                      java.trimTrailingWhitespace();
+                      java.googleJavaFormat("1.35.0").reflowLongStrings().formatJavadoc(true);
                       java.endWithNewline();
+                      java.expandWildcardImports();
+                      java.importOrder();
+                      java.removeUnusedImports();
+                      java.trimTrailingWhitespace();
                     }
                   });
             });

@@ -1,10 +1,10 @@
 package com.stano.gradle;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class OSTest {
   private static final String ORIGINAL_OS_NAME = System.getProperty("os.name");

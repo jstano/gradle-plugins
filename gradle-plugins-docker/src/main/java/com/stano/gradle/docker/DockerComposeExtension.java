@@ -1,10 +1,9 @@
 package com.stano.gradle.docker;
 
-import org.gradle.api.Project;
-
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import org.gradle.api.Project;
 
 public class DockerComposeExtension {
   private final Project project;

@@ -1,9 +1,9 @@
 package com.stano.gradle;
 
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+
+import org.junit.jupiter.api.Test;
 
 class SystemEnvironmentTest {
   @Test

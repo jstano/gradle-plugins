@@ -1,15 +1,14 @@
 package com.stano.gradle.plugin.test;
 
 import com.stano.gradle.RootExtensionFeature;
-import org.gradle.api.Project;
-import org.gradle.testfixtures.ProjectBuilder;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import org.gradle.api.Project;
+import org.gradle.testfixtures.ProjectBuilder;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 public abstract class BasePluginTest {
   protected Project rootProject;

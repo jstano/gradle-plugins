@@ -1,8 +1,7 @@
 package com.stano.gradle.docker;
 
-import org.gradle.api.provider.Property;
-
 import java.util.Collection;
+import org.gradle.api.provider.Property;
 
 public interface DockerRemoveImagesExtension {
   Property<Collection<String>> getImages();

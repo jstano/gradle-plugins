@@ -1,11 +1,6 @@
 package com.stano.gradle;
 
 import com.stano.gradle.changecase.ConstantCase;
-import org.codehaus.groovy.runtime.IOGroovyMethods;
-import org.gradle.api.Project;
-import org.gradle.api.Task;
-import org.gradle.api.tasks.TaskContainer;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -13,6 +8,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import org.codehaus.groovy.runtime.IOGroovyMethods;
+import org.gradle.api.Project;
+import org.gradle.api.Task;
+import org.gradle.api.tasks.TaskContainer;
 
 public class GradlePluginUtil {
   public static void installResource(ClassLoader classLoader, File folder, String resource) {

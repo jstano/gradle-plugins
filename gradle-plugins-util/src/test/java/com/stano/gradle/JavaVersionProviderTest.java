@@ -1,9 +1,9 @@
 package com.stano.gradle;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.gradle.api.JavaVersion;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class JavaVersionProviderTest {
   @Test

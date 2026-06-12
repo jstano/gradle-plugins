@@ -1,12 +1,11 @@
 package com.stano.gradle;
 
+import java.io.IOException;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectReader;
 import org.eclipse.jgit.lib.Ref;
 import org.gradle.api.Project;
-
-import java.io.IOException;
 
 public class CommitHashProvider {
   private final Project project;

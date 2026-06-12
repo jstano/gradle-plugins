@@ -1,9 +1,8 @@
 package com.stano.gradle;
 
+import java.io.IOException;
 import org.eclipse.jgit.api.Git;
 import org.gradle.api.Project;
-
-import java.io.IOException;
 
 public class RepositoryUrlProvider {
   private final Project project;

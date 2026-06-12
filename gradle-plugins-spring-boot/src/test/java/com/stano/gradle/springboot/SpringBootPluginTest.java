@@ -1,10 +1,10 @@
 package com.stano.gradle.springboot;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.stano.gradle.RootExtensionFeature;
 import org.gradle.testfixtures.ProjectBuilder;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SpringBootPluginTest {
   @Test

@@ -36,13 +36,14 @@ subprojects {
 
   extensions.configure(com.diffplug.gradle.spotless.SpotlessExtension::class.java) {
     java {
-//      palantirJavaFormat()
-      googleJavaFormat()
-//      eclipse().configFile(rootProject.file("eclipse-java-format.xml"))
+      googleJavaFormat("1.35.0")
+        .reflowLongStrings()
+        .formatJavadoc(true)
+      endWithNewline()
       expandWildcardImports()
+      importOrder()
       removeUnusedImports()
       trimTrailingWhitespace()
-      endWithNewline()
     }
   }
 

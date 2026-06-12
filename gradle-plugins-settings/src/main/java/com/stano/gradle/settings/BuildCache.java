@@ -1,9 +1,8 @@
 package com.stano.gradle.settings;
 
+import java.util.Map;
 import org.gradle.api.initialization.Settings;
 import org.gradle.caching.configuration.BuildCacheConfiguration;
-
-import java.util.Map;
 
 public class BuildCache {
   public void configureBuildCache(Settings settings) {
@@ -70,7 +69,8 @@ public class BuildCache {
     final var bucket = extraProperties.get("com.stano.build-cache.s3.bucket");
     if (bucket == null) {
       throw new IllegalStateException(
-          "S3 build cache enabled but com.stano.build-cache.s3.bucket or STANO_BUILD_CACHE_S3_BUCKET not configured");
+          "S3 build cache enabled but com.stano.build-cache.s3.bucket or"
+              + " STANO_BUILD_CACHE_S3_BUCKET not configured");
     }
     return bucket.toString();
   }
@@ -83,7 +83,8 @@ public class BuildCache {
     final var region = extraProperties.get("com.stano.build-cache.s3.region");
     if (region == null) {
       throw new IllegalStateException(
-          "S3 build cache enabled but com.stano.build-cache.s3.region or STANO_BUILD_CACHE_S3_REGION not configured");
+          "S3 build cache enabled but com.stano.build-cache.s3.region or"
+              + " STANO_BUILD_CACHE_S3_REGION not configured");
     }
     return region.toString();
   }
@@ -96,7 +97,8 @@ public class BuildCache {
     final var keyId = extraProperties.get("com.stano.build-cache.s3.access-key-id");
     if (keyId == null) {
       throw new IllegalStateException(
-          "S3 build cache enabled but com.stano.build-cache.s3.access-key-id or STANO_BUILD_CACHE_S3_ACCESS_KEY_ID not configured");
+          "S3 build cache enabled but com.stano.build-cache.s3.access-key-id or"
+              + " STANO_BUILD_CACHE_S3_ACCESS_KEY_ID not configured");
     }
     return keyId.toString();
   }
@@ -109,7 +111,8 @@ public class BuildCache {
     final var secret = extraProperties.get("com.stano.build-cache.s3.secret-access-key");
     if (secret == null) {
       throw new IllegalStateException(
-          "S3 build cache enabled but com.stano.build-cache.s3.secret-access-key or STANO_BUILD_CACHE_S3_SECRET_ACCESS_KEY not configured");
+          "S3 build cache enabled but com.stano.build-cache.s3.secret-access-key or"
+              + " STANO_BUILD_CACHE_S3_SECRET_ACCESS_KEY not configured");
     }
     return secret.toString();
   }

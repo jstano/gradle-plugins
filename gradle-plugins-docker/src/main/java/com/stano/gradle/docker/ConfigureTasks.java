@@ -3,10 +3,6 @@ package com.stano.gradle.docker;
 import com.stano.gradle.GradlePluginUtil;
 import com.stano.gradle.PluginFeature;
 import com.stano.gradle.RootExtension;
-import org.gradle.api.Project;
-import org.gradle.api.Task;
-import org.gradle.api.tasks.Exec;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -14,6 +10,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.gradle.api.Project;
+import org.gradle.api.Task;
+import org.gradle.api.tasks.Exec;
 
 public class ConfigureTasks implements PluginFeature {
   @Override
@@ -55,7 +54,8 @@ public class ConfigureTasks implements PluginFeature {
           registryHost.replaceAll(".*\\.dkr\\.ecr\\.", "").replace(".amazonaws.com", "");
       String awsDockerLogin =
           String.format(
-              "aws ecr get-login-password --region %s | docker login --username AWS --password-stdin %s",
+              "aws ecr get-login-password --region %s | docker login --username AWS"
+                  + " --password-stdin %s",
               awsRegion, registryHost);
       return project
           .getTasks()

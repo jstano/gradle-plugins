@@ -1,11 +1,10 @@
 package com.stano.gradle.javacommon;
 
+import java.util.Arrays;
+import java.util.List;
 import org.gradle.api.Project;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile;
-
-import java.util.Arrays;
-import java.util.List;
 
 public class CompilerUtils {
   public void configureJavaCompiler(Project project) {

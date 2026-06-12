@@ -1,14 +1,13 @@
 package com.stano.gradle.docker;
 
-import org.gradle.api.Plugin;
-import org.gradle.api.Project;
-import org.gradle.api.tasks.Exec;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import org.gradle.api.Plugin;
+import org.gradle.api.Project;
+import org.gradle.api.tasks.Exec;
 
 public class DockerRunPlugin implements Plugin<Project> {
   @Override

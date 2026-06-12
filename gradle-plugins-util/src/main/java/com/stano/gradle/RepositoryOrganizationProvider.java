@@ -1,13 +1,12 @@
 package com.stano.gradle;
 
-import org.eclipse.jgit.api.Git;
-import org.gradle.api.GradleException;
-import org.gradle.api.Project;
-
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import org.eclipse.jgit.api.Git;
+import org.gradle.api.GradleException;
+import org.gradle.api.Project;
 
 public class RepositoryOrganizationProvider {
   private final Project project;

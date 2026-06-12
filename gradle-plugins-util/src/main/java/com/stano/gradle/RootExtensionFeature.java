@@ -1,10 +1,9 @@
 package com.stano.gradle;
 
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
-import org.gradle.api.Project;
-
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.gradle.api.Project;
 
 /*
  * Gitlab (https://docs.gitlab.com/ci/variables/predefined_variables/)

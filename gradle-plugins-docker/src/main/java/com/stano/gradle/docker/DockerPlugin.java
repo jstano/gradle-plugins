@@ -1,6 +1,17 @@
 package com.stano.gradle.docker;
 
 import com.google.common.collect.ImmutableSet;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Supplier;
+import java.util.regex.Pattern;
+import javax.inject.Inject;
 import org.gradle.api.GradleException;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
@@ -17,18 +28,6 @@ import org.gradle.api.tasks.Copy;
 import org.gradle.api.tasks.Delete;
 import org.gradle.api.tasks.Exec;
 import org.gradle.api.tasks.bundling.Zip;
-
-import javax.inject.Inject;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Supplier;
-import java.util.regex.Pattern;
 
 public class DockerPlugin implements Plugin<Project> {
   private static final Logger log = Logging.getLogger(DockerPlugin.class);
@@ -264,8 +263,8 @@ public class DockerPlugin implements Plugin<Project> {
         if (!LABEL_KEY_PATTERN.matcher(label.getKey()).matches()) {
           throw new GradleException(
               String.format(
-                  "Docker label '%s' contains illegal characters. "
-                      + "Label keys must only contain lowercase alphanumeric, `.`, or `-` characters (must match %s).",
+                  "Docker label '%s' contains illegal characters. Label keys must only contain"
+                      + " lowercase alphanumeric, `.`, or `-` characters (must match %s).",
                   label.getKey(), LABEL_KEY_PATTERN.pattern()));
         }
         buildCommandLine.addAll(List.of("--label", label.getKey() + "=" + label.getValue()));

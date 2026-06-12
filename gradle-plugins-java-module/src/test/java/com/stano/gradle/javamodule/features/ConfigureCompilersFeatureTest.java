@@ -1,5 +1,9 @@
 package com.stano.gradle.javamodule.features;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import com.stano.gradle.JavaVersionProvider;
 import com.stano.gradle.RootExtension;
 import org.gradle.api.GradleException;
@@ -8,10 +12,6 @@ import org.gradle.api.Project;
 import org.gradle.api.plugins.ExtensionContainer;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @Disabled
 class ConfigureCompilersFeatureTest {

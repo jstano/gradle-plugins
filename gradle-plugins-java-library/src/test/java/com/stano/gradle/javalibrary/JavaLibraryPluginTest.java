@@ -1,14 +1,14 @@
 package com.stano.gradle.javalibrary;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.stano.gradle.plugin.test.BasePluginTest;
 import org.gradle.api.internal.file.copy.CopySpecInternal;
 import org.gradle.jvm.tasks.Jar;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Disabled
 class JavaLibraryPluginTest extends BasePluginTest {
