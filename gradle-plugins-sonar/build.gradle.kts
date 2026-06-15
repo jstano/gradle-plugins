@@ -7,11 +7,10 @@ gradlePlugin {
 }
 
 dependencies {
-  implementation(project(":gradle-plugins-util"))
+  implementation(project(":gradle-plugins-base"))
 
   implementation(libs.sonarqube.plugin)
 
-  testImplementation(project(":gradle-plugins-java-module"))
-  testImplementation(project(":gradle-plugins-project"))
-  testImplementation(project(":gradle-plugins-test"))
+  testImplementation(project(":gradle-plugins-java"))
+  testImplementation(testFixtures(project(":gradle-plugins-base")))
 }

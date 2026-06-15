@@ -277,7 +277,6 @@ public class DockerPlugin implements Plugin<Project> {
     return buildCommandLine;
   }
 
-  @Deprecated
   private static String computeName(String name, String tag) {
     int firstAt = tag.indexOf("@");
     String tagValue;
@@ -301,7 +300,6 @@ public class DockerPlugin implements Plugin<Project> {
     }
   }
 
-  @Deprecated
   private static String generateTagTaskName(String name) {
     String tagTaskName = name;
     int firstAt = name.indexOf("@");

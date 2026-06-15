@@ -7,9 +7,8 @@ gradlePlugin {
 }
 
 dependencies {
-  implementation(project(":gradle-plugins-project"))
-  implementation(project(":gradle-plugins-util"))
+  implementation(project(":gradle-plugins-base"))
   implementation(libs.guava)
 
-  testImplementation(project(":gradle-plugins-test"))
+  testImplementation(testFixtures(project(":gradle-plugins-base")))
 }

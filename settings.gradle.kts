@@ -1,10 +1,7 @@
 import com.github.burrunan.s3cache.AwsS3BuildCache
-import com.stano.gradle_dependency_management.MavenRepositoryUtil
 
-rootProject.name = "gradle-plugins"
-
-buildscript {
-  val properties = getExtensions().extraProperties.properties
+pluginManagement {
+  val properties = settings.extensions.extraProperties.properties
   val stanoMavenUrl = properties["com.stano.maven.url"]?.toString() ?: System.getenv("STANO_MAVEN_URL")
   val stanoMavenUsername = properties["com.stano.maven.username"]?.toString() ?: System.getenv("STANO_MAVEN_USERNAME")
   val stanoMavenPassword = properties["com.stano.maven.password"]?.toString() ?: System.getenv("STANO_MAVEN_PASSWORD")
@@ -15,36 +12,51 @@ buildscript {
     gradlePluginPortal()
     maven {
       name = "stano-maven"
-      url = uri(stanoMavenUrl)
+      url = uri(stanoMavenUrl!!)
       credentials {
         username = stanoMavenUsername
         password = stanoMavenPassword
       }
     }
   }
-  dependencies {
-    classpath("com.stano:gradle-dependency-management:${properties["gradleDependencyManagementVersion"].toString()}")
-    classpath("org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:${properties["sonarPluginVersion"]}")
-    classpath("com.github.burrunan.s3-build-cache:com.github.burrunan.s3-build-cache.gradle.plugin:1.9.5")
+}
+
+plugins {
+  id("com.github.burrunan.s3-build-cache") version "1.9.5"
+}
+
+rootProject.name = "gradle-plugins"
+
+dependencyResolutionManagement {
+  val properties = settings.extensions.extraProperties.properties
+  val stanoMavenUrl = properties["com.stano.maven.url"]?.toString() ?: System.getenv("STANO_MAVEN_URL")
+  val stanoMavenUsername = properties["com.stano.maven.username"]?.toString() ?: System.getenv("STANO_MAVEN_USERNAME")
+  val stanoMavenPassword = properties["com.stano.maven.password"]?.toString() ?: System.getenv("STANO_MAVEN_PASSWORD")
+
+  repositories {
+    mavenLocal()
+    mavenCentral()
+    gradlePluginPortal()
+    maven {
+      name = "stano-maven"
+      url = uri(stanoMavenUrl!!)
+      credentials {
+        username = stanoMavenUsername
+        password = stanoMavenPassword
+      }
+    }
   }
 }
 
-MavenRepositoryUtil.configureDependencyResolutionManagement(extensions, dependencyResolutionManagement)
-
 include("gradle-plugins-application")
+include("gradle-plugins-base")
 include("gradle-plugins-bom")
 include("gradle-plugins-docker")
-include("gradle-plugins-java-common")
+include("gradle-plugins-java")
 include("gradle-plugins-java-library")
-include("gradle-plugins-java-module")
-include("gradle-plugins-project")
 include("gradle-plugins-settings")
 include("gradle-plugins-sonar")
 include("gradle-plugins-spring-boot")
-include("gradle-plugins-test")
-include("gradle-plugins-util")
-
-apply(plugin = "com.github.burrunan.s3-build-cache")
 
 gradle.settingsEvaluated {
   val properties = extensions.extraProperties.properties

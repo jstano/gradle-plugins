@@ -7,9 +7,9 @@ gradlePlugin {
 }
 
 dependencies {
-  implementation(project(":gradle-plugins-util"))
+  implementation(project(":gradle-plugins-base"))
 
   implementation(libs.s3.build.cache)
 
-  testImplementation(project(":gradle-plugins-test"))
+  testImplementation(testFixtures(project(":gradle-plugins-base")))
 }

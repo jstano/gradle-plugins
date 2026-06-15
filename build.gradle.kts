@@ -1,13 +1,14 @@
-import com.stano.gradle_dependency_management.MavenRepositoryUtil
+import org.gradle.api.publish.PublishingExtension
+import org.gradle.api.publish.maven.MavenPublication
+import org.gradle.authentication.http.HttpHeaderAuthentication
 
 plugins {
-  id("org.sonarqube")
+  alias(libs.plugins.sonarqube)
   id("java-library")
   id("maven-publish")
   id("jacoco")
   id("com.diffplug.spotless") version libs.versions.spotless
 }
-
 
 sonar {
   val extraProperties = extensions.extraProperties.properties
@@ -36,7 +37,7 @@ subprojects {
 
   extensions.configure(com.diffplug.gradle.spotless.SpotlessExtension::class.java) {
     java {
-      googleJavaFormat("1.35.0")
+      googleJavaFormat(libs.versions.google.java.format.get())
         .reflowLongStrings()
         .formatJavadoc(true)
       endWithNewline()
@@ -57,7 +58,33 @@ subprojects {
     testRuntimeOnly(junitPlatformLauncherDep)
   }
 
-  MavenRepositoryUtil.configurePublishing(this)
+  configure<PublishingExtension> {
+    val projProperties = extensions.extraProperties.properties
+    val mavenUrl = projProperties["com.stano.maven.url"]?.toString() ?: System.getenv("STANO_MAVEN_URL")
+    val mavenUsername = projProperties["com.stano.maven.username"]?.toString() ?: System.getenv("STANO_MAVEN_USERNAME")
+    val mavenPassword = projProperties["com.stano.maven.password"]?.toString() ?: System.getenv("STANO_MAVEN_PASSWORD")
+
+    repositories {
+      maven {
+        name = "stano-maven"
+        url = uri(mavenUrl!!)
+        credentials {
+          username = mavenUsername
+          password = mavenPassword
+        }
+        authentication {
+          create<HttpHeaderAuthentication>("header")
+        }
+      }
+    }
+    publications {
+      val jarTask = tasks.findByName("jar") as? org.gradle.jvm.tasks.Jar ?: return@publications
+      create<MavenPublication>(jarTask.archiveBaseName.get()) {
+        from(components["java"])
+        artifactId = jarTask.archiveBaseName.get()
+      }
+    }
+  }
 
   tasks.withType<JavaCompile>().configureEach {
     options.compilerArgs = compilerOptions()

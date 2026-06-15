@@ -1,8 +1,8 @@
 package com.stano.gradle.docker;
 
-import com.stano.gradle.GradlePluginUtil;
-import com.stano.gradle.PluginFeature;
-import com.stano.gradle.RootExtension;
+import com.stano.gradle.base.BaseExtension;
+import com.stano.gradle.base.GradlePluginUtil;
+import com.stano.gradle.base.PluginFeature;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -18,10 +18,10 @@ public class ConfigureTasks implements PluginFeature {
   @Override
   public void apply(Project project) {
     final var dockerRegistrySettings = new DockerRegistrySettings(project);
-    final var rootExtension = project.getExtensions().getByType(RootExtension.class);
+    final var baseExtension = project.getExtensions().getByType(BaseExtension.class);
     DockerRemoveImagesExtension dockerRemoveImagesExtension =
         project.getExtensions().create("dockerRemoveImages", DockerRemoveImagesExtension.class);
-    configureDockerDefaults(project, dockerRegistrySettings, rootExtension);
+    configureDockerDefaults(project, dockerRegistrySettings, baseExtension);
     project.afterEvaluate(
         p -> {
           Task loginTask = createDockerLoginTask(p, dockerRegistrySettings);
@@ -151,36 +151,36 @@ public class ConfigureTasks implements PluginFeature {
   }
 
   private void configureDockerDefaults(
-      Project project, DockerRegistrySettings dockerRegistrySettings, RootExtension rootExtension) {
+      Project project, DockerRegistrySettings dockerRegistrySettings, BaseExtension baseExtension) {
     DockerExtension dockerExtension = project.getExtensions().getByType(DockerExtension.class);
-    dockerExtension.labels(getStandardLabels(project, rootExtension));
+    dockerExtension.labels(getStandardLabels(project, baseExtension));
     boolean hasSpringBootPlugin = project.getPlugins().hasPlugin("com.stano.spring-boot");
     if (hasSpringBootPlugin) {
-      String contextName = rootExtension.getContextName();
+      String contextName = baseExtension.getContextName();
       dockerExtension.setName(
           String.format(
               "%s/%s/%s/%s:%s",
               dockerRegistrySettings.getHost(),
-              rootExtension.getRepositoryOrganizationProvider().toString(),
+              baseExtension.getRepositoryOrganizationProvider().toString(),
               contextName.toLowerCase(),
-              rootExtension.getBranchNameProvider().toString().toLowerCase(),
+              baseExtension.getBranchNameProvider().toString().toLowerCase(),
               project.getVersion()));
       Task dockerDependencyTask = project.getTasks().getByName("bootWar");
       dockerExtension.files(dockerDependencyTask.getOutputs());
       dockerExtension.buildArgs(
-          getStandardBuildArgs(project, contextName, dockerRegistrySettings, rootExtension));
+          getStandardBuildArgs(project, contextName, dockerRegistrySettings, baseExtension));
     }
   }
 
-  private Map<String, String> getStandardLabels(Project project, RootExtension rootExtension) {
+  private Map<String, String> getStandardLabels(Project project, BaseExtension baseExtension) {
     Map<String, String> labels = new HashMap<>();
     labels.put("com.stano.build-hostname", GradlePluginUtil.getHostName());
     labels.put("com.stano.build-username", System.getProperty("user.name"));
-    String repositoryUrl = rootExtension.getRepositoryUrlProvider().toString();
-    String branchName = rootExtension.getBranchNameProvider().toString();
-    String buildNumber = rootExtension.getBuildNumber();
-    String commitHash = rootExtension.getCommitHashProvider().toString();
-    String commitTime = rootExtension.getCommitTimeProvider().toString();
+    String repositoryUrl = baseExtension.getRepositoryUrlProvider().toString();
+    String branchName = baseExtension.getBranchNameProvider().toString();
+    String buildNumber = baseExtension.getBuildNumber();
+    String commitHash = baseExtension.getCommitHashProvider().toString();
+    String commitTime = baseExtension.getCommitTimeProvider().toString();
     if (repositoryUrl != null) {
       labels.put("com.stano.repository-url", repositoryUrl);
     }
@@ -203,13 +203,13 @@ public class ConfigureTasks implements PluginFeature {
       Project project,
       String contextName,
       DockerRegistrySettings dockerRegistrySettings,
-      RootExtension rootExtension) {
+      BaseExtension baseExtension) {
     Map<String, String> buildArgs = new HashMap<>();
     buildArgs.put("DOCKER_REGISTRY", dockerRegistrySettings.getHost());
     buildArgs.put("PROJECT_VERSION", project.getVersion().toString());
     buildArgs.put("CONTEXT_NAME", contextName);
-    if (rootExtension.getBuildNumber() != null) {
-      buildArgs.put("BUILD_NUMBER", rootExtension.getBuildNumber());
+    if (baseExtension.getBuildNumber() != null) {
+      buildArgs.put("BUILD_NUMBER", baseExtension.getBuildNumber());
     }
     return buildArgs;
   }

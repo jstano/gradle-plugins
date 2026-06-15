@@ -1,6 +1,6 @@
 package com.stano.gradle.javalibrary.features;
 
-import com.stano.gradle.PluginFeature;
+import com.stano.gradle.base.PluginFeature;
 import org.gradle.api.Project;
 import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.jvm.tasks.Jar;

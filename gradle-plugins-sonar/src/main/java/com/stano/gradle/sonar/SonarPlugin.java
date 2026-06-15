@@ -1,6 +1,6 @@
 package com.stano.gradle.sonar;
 
-import com.stano.gradle.GradleProperties;
+import com.stano.gradle.base.GradleProperties;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.slf4j.Logger;

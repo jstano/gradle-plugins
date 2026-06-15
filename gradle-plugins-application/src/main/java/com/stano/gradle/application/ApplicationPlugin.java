@@ -1,11 +1,10 @@
 package com.stano.gradle.application;
 
-import com.stano.gradle.ProjectVersionProvider;
-import com.stano.gradle.RootExtension;
-import com.stano.gradle.project.ProjectPlugin;
+import com.stano.gradle.base.BaseExtension;
+import com.stano.gradle.base.BasePlugin;
 import org.gradle.api.Project;
 
-public class ApplicationPlugin extends ProjectPlugin {
+public class ApplicationPlugin extends BasePlugin {
   @Override
   public void apply(Project project) {
     super.apply(project);
@@ -15,8 +14,8 @@ public class ApplicationPlugin extends ProjectPlugin {
   }
 
   private void setVersion(Project project) {
-    RootExtension rootExtension = project.getExtensions().getByType(RootExtension.class);
-    project.setVersion(new ProjectVersionProvider(project, rootExtension));
+    BaseExtension baseExtension = project.getExtensions().getByType(BaseExtension.class);
+    project.setVersion(new ProjectVersionProvider(project, baseExtension));
     project
         .getSubprojects()
         .forEach(

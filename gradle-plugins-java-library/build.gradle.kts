@@ -7,10 +7,8 @@ gradlePlugin {
 }
 
 dependencies {
-  implementation(project(":gradle-plugins-java-common"))
-  implementation(project(":gradle-plugins-java-module"))
-  implementation(project(":gradle-plugins-project"))
-  implementation(project(":gradle-plugins-util"))
+  implementation(project(":gradle-plugins-java"))
+  implementation(project(":gradle-plugins-base"))
 
-  testImplementation(project(":gradle-plugins-test"))
+  testImplementation(testFixtures(project(":gradle-plugins-base")))
 }

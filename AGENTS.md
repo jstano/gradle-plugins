@@ -44,10 +44,10 @@ Each `gradle-plugins-*` submodule is an independently published Gradle plugin. T
 
 | Plugin ID | Implementation Class | Submodule | Purpose |
 |---|---|---|---|
-| `com.stano.project` | `ProjectPlugin` | `gradle-plugins-project` | Root-project prerequisite. Registers `RootExtension`, adds `jacocoRootReport`. **Must be applied to the root project before any other stano plugin.** |
-| `com.stano.application` | `ApplicationPlugin` | `gradle-plugins-application` | Extends `com.stano.project`. Sets `project.version` from `ProjectVersionProvider`, applies `base` and `jacoco` to all subprojects. |
-| `com.stano.java-module` | `JavaModulePlugin` | `gradle-plugins-java-module` | Core plugin for internal Java/Kotlin modules. Applies java-library, Kotlin JVM, JaCoCo, Spotless (Eclipse formatter). Validates that `com.stano.project` is already on the root. |
-| `com.stano.java-library` | `JavaLibraryPlugin` | `gradle-plugins-java-library` | Extends `com.stano.java-module`. Adds `javadoc` + sources JARs and Maven publishing. |
+| `com.stano.base` | `ProjectPlugin` | `gradle-plugins-base` | Root-project prerequisite. Registers `BaseExtension`, adds `jacocoRootReport`. **Must be applied to the root project before any other stano plugin.** |
+| `com.stano.application` | `ApplicationPlugin` | `gradle-plugins-application` | Extends `com.stano.base`. Sets `project.version` from `ProjectVersionProvider`, applies `base` and `jacoco` to all subprojects. |
+| `com.stano.java` | `JavaPlugin` | `gradle-plugins-java` | Core plugin for internal Java/Kotlin modules. Applies java-library, Kotlin JVM, JaCoCo, Spotless (Eclipse formatter). Validates that `com.stano.base` is already on the root. |
+| `com.stano.java-library` | `JavaLibraryPlugin` | `gradle-plugins-java-library` | Extends `com.stano.java`. Adds `javadoc` + sources JARs and Maven publishing. |
 | `com.stano.spring-boot` | `SpringBootPlugin` | `gradle-plugins-spring-boot` | Applies `org.springframework.boot`, pins Spring Boot + MSP BOM, names the boot JAR after the root project, registers a `copyOtelJavaagent` task. |
 | `com.stano.sonar` | `SonarPlugin` | `gradle-plugins-sonar` | SonarQube integration. Silently skips (with a warning) when host/token are unconfigured. |
 | `com.stano.settings` | `SettingsPlugin` | `gradle-plugins-settings` | Settings-level plugin. Configures dependency resolution management, S3 build cache, and pins Kotlin JVM plugin version. |
@@ -59,9 +59,7 @@ Each `gradle-plugins-*` submodule is an independently published Gradle plugin. T
 
 | Submodule | Purpose |
 |---|---|
-| `gradle-plugins-util` | `PluginFeature` interface, `RootExtension`, `BranchNameProvider`, case-conversion utilities, Jackson/JGit/SnakeYAML wrappers |
-| `gradle-plugins-java-common` | `CompilerUtils` (Java + Kotlin compiler config), `MavenRepositoryUtils` |
-| `gradle-plugins-test` | `BasePluginTest` base class for plugin integration tests |
+| `gradle-plugins-base` (testFixtures) | `BasePluginTest` base class for plugin integration tests; also provides shared infrastructure via testFixtures source set |
 | `gradle-plugins-bom` | Aggregator BOM re-exported to consumers. Add new `gradle-plugins-*` submodule JARs here as constraints. |
 
 ---
@@ -78,7 +76,7 @@ All versions are centralized in `gradle/libs.versions.toml`. When adding a new d
 
 When adding a new `gradle-plugins-*` submodule, add an `implementation` constraint for its JAR in `gradle-plugins-bom/build.gradle.kts`.
 
-`commons-logging` and `log4j` are globally excluded from all configurations in projects applying `com.stano.java-module`. Do not add them.
+`commons-logging` and `log4j` are globally excluded from all configurations in projects applying `com.stano.java`. Do not add them.
 
 ---
 
@@ -95,19 +93,18 @@ Root package: `com.stano.gradle`. Subpackages match the submodule's functional d
 
 | Package | Submodule / purpose |
 |---|---|
-| `com.stano.gradle` | `gradle-plugins-util` root utilities |
+| `com.stano.gradle.base` | `gradle-plugins-base` — shared plugin infrastructure: `BaseExtension`, `PluginFeature`, `GradlePluginUtil`, `BranchNameProvider`, case-conversion utilities, Jackson/JGit/SnakeYAML wrappers |
+| `com.stano.gradle.base.changecase` | Case-conversion utilities |
 | `com.stano.gradle.application` | `gradle-plugins-application` |
 | `com.stano.gradle.docker` | `gradle-plugins-docker` |
-| `com.stano.gradle.javacommon` | `gradle-plugins-java-common` |
 | `com.stano.gradle.javalibrary` | `gradle-plugins-java-library` |
-| `com.stano.gradle.javamodule` | `gradle-plugins-java-module` |
-| `com.stano.gradle.plugin.test` | `gradle-plugins-test` |
-| `com.stano.gradle.project` | `gradle-plugins-project` |
+| `com.stano.gradle.java` | `gradle-plugins-java` |
+| `com.stano.gradle.plugin.test` | `gradle-plugins-test` (deprecated; use testFixtures from gradle-plugins-base) |
 | `com.stano.gradle.settings` | `gradle-plugins-settings` |
 | `com.stano.gradle.sonar` | `gradle-plugins-sonar` |
 | `com.stano.gradle.springboot` | `gradle-plugins-spring-boot` |
 
-Feature classes live in a `.features` subpackage of the plugin's package (e.g., `com.stano.gradle.javamodule.features`).
+Feature classes live in a `.features` subpackage of the plugin's package (e.g., `com.stano.gradle.java.features`).
 
 ### Code Style
 
@@ -130,16 +127,16 @@ Run `./gradlew spotlessApply` to auto-fix formatting before committing.
 
 **Configuring Gradle extensions from a feature**: use `project.getExtensions().configure(SomeExtension.class, ext -> { ... })`.
 
-**`RootExtension`** (`gradle-plugins-util/.../RootExtension.java`): registered on the root project as `"root"`. Carries cross-project config: `javaVersion` (default `"21"`), `mspVersion`, `contextName`, pact broker coordinates, Docker registry coordinates, `branchNameProvider`, `commitHashProvider`, etc. Fetch it in features via `project.getRootProject().getExtensions().getByType(RootExtension.class)`.
+**`BaseExtension`** (`gradle-plugins-base/.../BaseExtension.java`): registered on the root project as `"base"` by `BaseExtensionFeature`. Carries cross-project config: `javaVersion` (default `"21"`), `mspVersion`, `contextName`, pact broker coordinates, Docker registry coordinates, `branchNameProvider`, `commitHashProvider`, etc. Fetch it in features via `project.getRootProject().getExtensions().getByType(BaseExtension.class)`.
 
-**`JavaExtension`** (`gradle-plugins-java-module/.../JavaExtension.java`): registered on each subproject as `"stanoJava"` by `JavaModulePlugin`. Currently a marker interface — the extension point for future per-project java-module configuration.
+**`JavaExtension`** (`gradle-plugins-java/.../JavaExtension.java`): registered on each subproject as `"java"` by `JavaPlugin`. Currently a marker interface — the extension point for future per-project java configuration.
 
-**Prerequisite enforcement**: `JavaModulePlugin` throws `GradleException` at `apply()` time if `ProjectPlugin` is not already on the root project. Follow this pattern for any plugin that depends on another.
+**Prerequisite enforcement**: `JavaPlugin` throws `GradleException` at `apply()` time if `ProjectPlugin` is not already on the root project. Follow this pattern for any plugin that depends on another.
 
 ### Test Conventions
 
-- **Class naming**: `<Subject>Test` — e.g., `JavaModulePluginTest`, `ConfigureCompilersFeatureTest`, `RootExtensionTest`
-- **Base class**: plugin integration tests extend `BasePluginTest` (`gradle-plugins-test/.../BasePluginTest.java`), which creates a temp-dir `rootProject` + `childProject` via `ProjectBuilder` and applies `RootExtensionFeature` to the root
+- **Class naming**: `<Subject>Test` — e.g., `JavaPluginTest`, `ConfigureCompilersFeatureTest`, `BaseExtensionTest`
+- **Base class**: plugin integration tests extend `BasePluginTest` (available via `testFixtures(project(":gradle-plugins-base"))`), which creates a temp-dir `rootProject` + `childProject` via `ProjectBuilder` and applies `BaseExtensionFeature` to the root
 - **Method naming**: long descriptive camelCase sentences — e.g., `applyingThePluginShouldRegisterTheSpotlessTask`
 - **Assertions**: AssertJ (`assertThat(...).isEqualTo(...)`) and JUnit 5 assertions
 - **Mocking**: Mockito 5
