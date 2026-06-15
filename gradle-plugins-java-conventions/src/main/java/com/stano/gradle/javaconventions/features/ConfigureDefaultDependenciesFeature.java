@@ -31,6 +31,9 @@ public class ConfigureDefaultDependenciesFeature implements PluginFeature {
       dependencies.add(
           "implementation",
           dependencies.enforcedPlatform("com.stano:msp-bom:" + baseExtension.getMspVersion()));
+      dependencies.add(
+          "annotationProcessor",
+          dependencies.enforcedPlatform("com.stano:msp-bom:" + baseExtension.getMspVersion()));
       dependencies.add("compileOnly", "org.jetbrains:annotations");
       dependencies.add("testImplementation", "com.stano:msp-test-starter");
       dependencies.add("testRuntimeOnly", "org.junit.platform:junit-platform-launcher");
@@ -48,14 +51,18 @@ public class ConfigureDefaultDependenciesFeature implements PluginFeature {
   }
 
   private boolean hasMapStructDependency(Project project) {
-    for (var config : project.getConfigurations()) {
-      for (var dep : config.getDependencies()) {
-        if ("org.mapstruct".equals(dep.getGroup()) && "mapstruct".equals(dep.getName())) {
-          return true;
-        }
-      }
+    try {
+      return project.getConfigurations().getByName("compileClasspath")
+          .getResolvedConfiguration().getResolvedArtifacts().stream()
+          .anyMatch(
+              a ->
+                  "org.mapstruct".equals(
+                          a.getModuleVersion().getId().getModule().getGroup())
+                      && "mapstruct".equals(
+                          a.getModuleVersion().getId().getModule().getName()));
+    } catch (Exception e) {
+      return false;
     }
-    return false;
   }
 
   private Map<String, String> exclude(String group, String module) {

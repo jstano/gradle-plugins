@@ -5,6 +5,7 @@ import java.util.stream.Stream;
 import org.gradle.api.Action;
 import org.gradle.api.DomainObjectSet;
 import org.gradle.api.Project;
+import org.gradle.api.Task;
 import org.gradle.api.artifacts.ProjectDependency;
 import org.gradle.api.file.SourceDirectorySet;
 import org.gradle.api.invocation.Gradle;
@@ -53,6 +54,15 @@ public class ProjectsEvaluatedAction implements Action<Gradle> {
                       SourceSetOutput mainOutput = mainSourceSet.getOutput();
                       jacocoReport.additionalSourceDirs(project.files(javaSrc.getSrcDirs()));
                       jacocoReport.additionalClassDirs(mainOutput);
+                      Task compileJava = dependentProject.getTasks().findByName("compileJava");
+                      if (compileJava != null) {
+                        jacocoReport.dependsOn(compileJava);
+                      }
+                      Task compileTestJava =
+                          dependentProject.getTasks().findByName("compileTestJava");
+                      if (compileTestJava != null) {
+                        jacocoReport.dependsOn(compileTestJava);
+                      }
                     });
           }
         });
@@ -61,9 +71,18 @@ public class ProjectsEvaluatedAction implements Action<Gradle> {
         .getRootProject()
         .getSubprojects()
         .forEach(
-            sub ->
-                jacocoReport
-                    .getExecutionData()
-                    .from(sub.getLayout().getBuildDirectory().file("jacoco/test.exec")));
+            sub -> {
+              jacocoReport
+                  .getExecutionData()
+                  .from(sub.getLayout().getBuildDirectory().file("jacoco/test.exec"));
+              Task testTask = sub.getTasks().findByName("test");
+              if (testTask != null) {
+                jacocoReport.dependsOn(testTask);
+              }
+              Task jacocoSubReport = sub.getTasks().findByName("jacocoTestReport");
+              if (jacocoSubReport != null) {
+                jacocoReport.dependsOn(jacocoSubReport);
+              }
+            });
   }
 }

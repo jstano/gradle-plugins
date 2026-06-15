@@ -32,11 +32,7 @@ public class ConfigureJacocoFeature implements PluginFeature {
                     }));
     jacocoReport
         .getExecutionData()
-        .setFrom(
-            project
-                .getRootProject()
-                .fileTree(project.getRootProject().getRootDir())
-                .include("**/build/jacoco/*.exec"));
+        .setFrom(project.getLayout().getBuildDirectory().file("jacoco/test.exec"));
     Task testTask = project.getTasks().getByName("test");
     testTask.finalizedBy("jacocoTestReport");
   }
