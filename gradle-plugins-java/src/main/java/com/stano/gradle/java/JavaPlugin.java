@@ -24,7 +24,7 @@ public class JavaPlugin implements Plugin<Project> {
           "com.stano.java requires com.stano.base (or com.stano.application) "
               + "to be applied to the root project.");
     }
-    project.getExtensions().create("java", JavaExtension.class);
+    project.getExtensions().create("javaConventions", JavaExtension.class);
     new ConfigurePluginsFeature().apply(project);
     new ConfigureSpotlessFeature().apply(project);
     new ConfigureDefaultDependenciesFeature().apply(project);

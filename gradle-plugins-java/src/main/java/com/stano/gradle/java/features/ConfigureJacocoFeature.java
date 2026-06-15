@@ -1,6 +1,8 @@
 package com.stano.gradle.java.features;
 
 import com.stano.gradle.base.PluginFeature;
+import java.io.File;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
@@ -14,6 +16,8 @@ public class ConfigureJacocoFeature implements PluginFeature {
     jacocoReport.dependsOn(project.getTasks().getByName("test"));
     jacocoReport.getReports().getHtml().getRequired().set(true);
     jacocoReport.getReports().getXml().getRequired().set(true);
+
+    Set<File> classDirectories = jacocoReport.getClassDirectories().getFiles();
     jacocoReport
         .getClassDirectories()
         .setFrom(
@@ -21,12 +25,9 @@ public class ConfigureJacocoFeature implements PluginFeature {
                 (Callable<FileCollection>)
                     () -> {
                       var filtered = project.files();
-                      jacocoReport
-                          .getClassDirectories()
-                          .getFiles()
-                          .forEach(
-                              file ->
-                                  filtered.from(project.fileTree(file).exclude("**/generated/**")));
+                      for (File file : classDirectories) {
+                        filtered.from(project.fileTree(file).exclude("**/generated/**"));
+                      }
                       return filtered;
                     }));
     jacocoReport

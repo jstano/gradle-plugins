@@ -11,7 +11,7 @@ import org.gradle.api.artifacts.dsl.DependencyHandler;
 public class ConfigureDefaultDependenciesFeature implements PluginFeature {
   @Override
   public void apply(Project project) {
-    final var javaExtension = project.getExtensions().getByType(JavaExtension.class);
+    project.getExtensions().getByType(JavaExtension.class);
     final var baseExtension =
         project.getRootProject().getExtensions().getByType(BaseExtension.class);
     if (baseExtension.getMspVersion() != null) {

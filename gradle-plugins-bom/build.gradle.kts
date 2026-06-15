@@ -4,6 +4,7 @@ dependencies {
   implementation(project(":gradle-plugins-java-library"))
   implementation(project(":gradle-plugins-java"))
   implementation(project(":gradle-plugins-base"))
+  implementation(project(":gradle-plugins-library"))
   implementation(project(":gradle-plugins-settings"))
   implementation(project(":gradle-plugins-sonar"))
   implementation(project(":gradle-plugins-spring-boot"))
