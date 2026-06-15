@@ -1,9 +1,20 @@
 plugins {
   id("java-gradle-plugin")
+  alias(libs.plugins.plugin.publish)
 }
 
 gradlePlugin {
-  isAutomatedPublishing = false
+  website = "https://github.com/jstano/gradle-plugins"
+  vcsUrl = "https://github.com/jstano/gradle-plugins"
+  plugins {
+    create("javaLibrary") {
+      id = "com.stano.java-library"
+      implementationClass = "com.stano.gradle.javalibrary.JavaLibraryPlugin"
+      displayName = "Java Library Plugin"
+      description = "Extends com.stano.java with javadoc + sources JARs and Maven publishing for library submodules."
+      tags = listOf("convention", "java", "library", "publishing")
+    }
+  }
 }
 
 dependencies {

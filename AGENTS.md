@@ -152,6 +152,6 @@ Run `./gradlew spotlessApply` to auto-fix formatting before committing.
 
 **Inactive submodules in `settings.gradle.kts` are intentionally disabled.** Do not uncomment them without an explicit user request.
 
-**Plugin publishing is manual** (`isAutomatedPublishing = false`). Do not change this setting or attempt to publish to the Gradle Plugin Portal.
+**Publish to the Gradle Plugin Portal** with `./gradlew publishPlugins`. Credentials (`gradle.publish.key` / `gradle.publish.secret`) must be set in `~/.gradle/gradle.properties`. Obtain keys from https://plugins.gradle.org/u/<username>/keys after logging in. The private Maven publishing (via `stano-maven`) coexists with Portal publishing.
 
 **`gradle-plugins-docker` is excluded from `gradle-plugins-bom`** intentionally. Do not add it back without an explicit user request.

@@ -1,5 +1,7 @@
+import org.gradle.api.file.DuplicatesStrategy
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
+import org.gradle.api.tasks.Copy
 import org.gradle.authentication.http.HttpHeaderAuthentication
 
 plugins {
@@ -84,6 +86,14 @@ subprojects {
         artifactId = jarTask.archiveBaseName.get()
       }
     }
+  }
+
+  tasks.named<Copy>("processResources") {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+  }
+
+  tasks.named("javadoc") {
+    enabled = false
   }
 
   tasks.withType<JavaCompile>().configureEach {
