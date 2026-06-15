@@ -11,11 +11,7 @@ import org.junit.jupiter.api.Test;
 @Disabled
 class JavaPluginTest extends BasePluginTest {
   @BeforeEach
-  void setup() {
-    System.setProperty("stanoMavenUrl", "https://maven.stano.com");
-    System.setProperty("stanoMavenUsername", "MAVEN_USERNAME");
-    System.setProperty("stanoMavenPassword", "MAVEN_PASSWORD");
-  }
+  void setup() {}
 
   @Test
   void shouldApplyStanoProjectPluginIfNotAlreadyApplied() {

@@ -19,13 +19,7 @@ public class DependencyResolutionManagement {
             ? properties.get(STANO_MAVEN_URL_PROPERTY).toString()
             : System.getenv(STANO_MAVEN_URL_ENVIRONMENT);
     if (stanoMavenUrl == null) {
-      throw new IllegalStateException(
-          "Private Maven repository URL not configured. "
-              + "Set "
-              + STANO_MAVEN_URL_PROPERTY
-              + " property or "
-              + STANO_MAVEN_URL_ENVIRONMENT
-              + " environment variable.");
+      return;
     }
     settings
         .getDependencyResolutionManagement()

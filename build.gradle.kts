@@ -67,15 +67,17 @@ subprojects {
     val mavenPassword = projProperties["com.stano.maven.password"]?.toString() ?: System.getenv("STANO_MAVEN_PASSWORD")
 
     repositories {
-      maven {
-        name = "stano-maven"
-        url = uri(mavenUrl!!)
-        credentials {
-          username = mavenUsername
-          password = mavenPassword
-        }
-        authentication {
-          create<HttpHeaderAuthentication>("header")
+      if (mavenUrl != null) {
+        maven {
+          name = "stano-maven"
+          url = uri(mavenUrl)
+          credentials {
+            username = mavenUsername
+            password = mavenPassword
+          }
+          authentication {
+            create<HttpHeaderAuthentication>("header")
+          }
         }
       }
     }

@@ -24,6 +24,9 @@ public class MavenRepositoryUtils {
         properties.containsKey(STANO_MAVEN_URL_PROPERTY)
             ? properties.get(STANO_MAVEN_URL_PROPERTY).toString()
             : System.getenv(STANO_MAVEN_URL_ENVIRONMENT);
+    if (stanoMavenUrl == null) {
+      return;
+    }
     repository.setName("stano-maven");
     repository.setUrl(stanoMavenUrl);
     setRepositoryCredentials(project, repository);
@@ -47,6 +50,14 @@ public class MavenRepositoryUtils {
   }
 
   public static void configurePublishingRepositories(Project project) {
+    var properties = project.getExtensions().getExtraProperties().getProperties();
+    var stanoMavenUrl =
+        properties.containsKey(STANO_MAVEN_URL_PROPERTY)
+            ? properties.get(STANO_MAVEN_URL_PROPERTY).toString()
+            : System.getenv(STANO_MAVEN_URL_ENVIRONMENT);
+    if (stanoMavenUrl == null) {
+      return;
+    }
     PublishingExtension publishingExtension =
         project.getExtensions().findByType(PublishingExtension.class);
     publishingExtension.repositories(

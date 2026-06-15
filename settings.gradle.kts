@@ -10,12 +10,14 @@ pluginManagement {
     mavenLocal()
     mavenCentral()
     gradlePluginPortal()
-    maven {
-      name = "stano-maven"
-      url = uri(stanoMavenUrl!!)
-      credentials {
-        username = stanoMavenUsername
-        password = stanoMavenPassword
+    if (stanoMavenUrl != null) {
+      maven {
+        name = "stano-maven"
+        url = uri(stanoMavenUrl)
+        credentials {
+          username = stanoMavenUsername
+          password = stanoMavenPassword
+        }
       }
     }
   }
@@ -37,12 +39,14 @@ dependencyResolutionManagement {
     mavenLocal()
     mavenCentral()
     gradlePluginPortal()
-    maven {
-      name = "stano-maven"
-      url = uri(stanoMavenUrl!!)
-      credentials {
-        username = stanoMavenUsername
-        password = stanoMavenPassword
+    if (stanoMavenUrl != null) {
+      maven {
+        name = "stano-maven"
+        url = uri(stanoMavenUrl)
+        credentials {
+          username = stanoMavenUsername
+          password = stanoMavenPassword
+        }
       }
     }
   }

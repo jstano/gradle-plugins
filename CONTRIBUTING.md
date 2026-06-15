@@ -12,14 +12,14 @@ Thanks for contributing! This guide walks you through setup, conventions, and th
 
 ### 1. Configure Maven Repository Access
 
-The project requires credentials for the private Stano Maven repository to resolve dependencies.
+The project can optionally use a private Maven repository to resolve or publish dependencies. If your team maintains a private Maven repository, you can configure it as follows:
 
 **Option A: `~/.gradle/gradle.properties` (recommended)**
 
 Add to your home Gradle properties file:
 
 ```properties
-com.stano.maven.url=https://maven.stano.com/repository/releases
+com.stano.maven.url=https://your-private-maven-repo/repository/releases
 com.stano.maven.username=<username>
 com.stano.maven.password=<password>
 ```
@@ -29,10 +29,12 @@ com.stano.maven.password=<password>
 Alternatively, export:
 
 ```bash
-export STANO_MAVEN_URL=https://maven.stano.com/repository/releases
+export STANO_MAVEN_URL=https://your-private-maven-repo/repository/releases
 export STANO_MAVEN_USERNAME=<username>
 export STANO_MAVEN_PASSWORD=<password>
 ```
+
+If you do not have a private Maven repository, you can safely omit these settings.
 
 ### 2. Optional: S3 Build Cache (for faster CI/local builds)
 
@@ -398,11 +400,11 @@ Credentials required (from dev environment setup above).
 
 ## Troubleshooting
 
-### Maven Repository Not Found
+### Maven Repository Not Found (Private Repository Configured)
 
 **Error:** "Could not find artifact com.example:lib:1.0.0"
 
-**Fix:** Verify `STANO_MAVEN_URL`, `STANO_MAVEN_USERNAME`, `STANO_MAVEN_PASSWORD` are set in `~/.gradle/gradle.properties` or as environment variables.
+**Fix:** If you have configured a private Maven repository, verify `STANO_MAVEN_URL`, `STANO_MAVEN_USERNAME`, `STANO_MAVEN_PASSWORD` are set in `~/.gradle/gradle.properties` or as environment variables.
 
 ### Spotless Formatting Failures
 

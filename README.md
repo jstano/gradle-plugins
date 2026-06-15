@@ -4,7 +4,7 @@ A suite of Gradle plugins for building Java/Kotlin applications and libraries wi
 
 ## Overview
 
-This project publishes 11 Gradle plugins to the Gradle Plugin Portal and a private Maven repository. The plugins are designed to work together as a cohesive build system:
+This project publishes 11 Gradle plugins to the Gradle Plugin Portal. The plugins are designed to work together as a cohesive build system:
 
 - **Settings-level**: `com.stano.settings` (configures repositories, build cache, plugin versions)
 - **Root project**: `com.stano.base`, `com.stano.application`, `com.stano.library` (set up base infrastructure and versioning)
@@ -40,7 +40,7 @@ This **must** be the first plugin block, before `rootProject.name`:
 
 ```kotlin
 plugins {
-  id("com.stano.settings") version "1.0.0"  // replace with actual version
+  id("com.stano.settings") version "1.0.0"  // replace it with actual version
 }
 
 rootProject.name = "my-app"
@@ -50,12 +50,13 @@ buildCacheSettings {
   buildCachePrefix.set("my-custom-prefix")
 }
 
-// Configure Maven repository URL (required unless using mavenLocal only)
+// Configure private Maven repository URL (optional)
 // Can also be set via gradle.properties or env var STANO_MAVEN_URL
 ```
 
 This plugin:
-- Configures `dependencyResolutionManagement` to use `mavenLocal()`, `mavenCentral()`, and the private Stano Maven repo
+- Configures `dependencyResolutionManagement` to use `mavenLocal()` and `mavenCentral()` by default
+- Optionally adds a private Maven repository if `STANO_MAVEN_URL` is configured
 - Optionally enables S3 build cache (set `com.stano.build-cache.type=s3`)
 - Automatically pins Kotlin JVM and all `com.stano.*` plugins to compatible versions
 
@@ -97,7 +98,7 @@ plugins {
 
 ### `com.stano.settings`
 
-**Applied to:** `settings.gradle.kts`  
+**Applied to:** `settings.gradle.kts`
 **Description:** Configures repository resolution, build cache, and pins plugin versions.
 
 **Minimal example:**
@@ -124,7 +125,7 @@ buildCacheSettings {
 
 | Gradle Property | Env Variable | Purpose | Required? |
 |---|---|---|---|
-| `com.stano.maven.url` | `STANO_MAVEN_URL` | Private Maven repository URL | Yes |
+| `com.stano.maven.url` | `STANO_MAVEN_URL` | Private Maven repository URL | No (optional) |
 | `com.stano.maven.username` | `STANO_MAVEN_USERNAME` | Maven credentials | If private repo needs auth |
 | `com.stano.maven.password` | `STANO_MAVEN_PASSWORD` | Maven credentials | If private repo needs auth |
 | `com.stano.build-cache.type` | `STANO_BUILD_CACHE_TYPE` | Set to `s3` to enable remote build cache | No (default: local only) |
@@ -139,7 +140,7 @@ buildCacheSettings {
 
 ### `com.stano.base`
 
-**Applied to:** Root project only  
+**Applied to:** Root project only
 **Description:** Registers `BaseExtension` on the root project with cross-project configuration (Java version, versioning, CI metadata, Docker/Pact broker coordinates). Also registers `jacocoRootReport` task to aggregate coverage from all subprojects.
 
 **Minimal example:**
@@ -192,8 +193,8 @@ extensions.getByType<BaseExtension>().apply {
 
 ### `com.stano.application`
 
-**Applied to:** Root project only  
-**Extends:** `com.stano.base`  
+**Applied to:** Root project only
+**Extends:** `com.stano.base`
 **Description:** Everything `com.stano.base` does, plus automatically sets `project.version` for all subprojects based on git metadata (commit timestamp + hash, optionally with CI build number).
 
 **Minimal example:**
@@ -214,8 +215,8 @@ The version is computed as:
 
 ### `com.stano.library`
 
-**Applied to:** Root project only  
-**Extends:** `com.stano.base`  
+**Applied to:** Root project only
+**Extends:** `com.stano.base`
 **Description:** Like `com.stano.application` but does NOT set `project.version`. Use for multi-module library builds where version is managed elsewhere (e.g., in `gradle.properties` or a parent POM).
 
 **Minimal example:**
@@ -233,8 +234,8 @@ version = "1.2.3"  // manage version yourself
 
 ### `com.stano.java`
 
-**Applied to:** Each Java/Kotlin subproject  
-**Prerequisite:** `com.stano.base` (or `com.stano.application`/`com.stano.library`) must be applied to the root project  
+**Applied to:** Each Java/Kotlin subproject
+**Prerequisite:** `com.stano.base` (or `com.stano.application`/`com.stano.library`) must be applied to the root project
 **Description:** Core Java subproject plugin. Configures compilers (Java toolchain + incremental), applies Spotless (Google Java Format), configures test execution (JUnit Platform, Pact broker properties), manages JaCoCo coverage.
 
 **Minimal example:**
@@ -291,8 +292,8 @@ dependencies {
 
 ### `com.stano.java-library`
 
-**Applied to:** Library subprojects that publish to Maven  
-**Extends:** `com.stano.java` (plus `maven-publish`)  
+**Applied to:** Library subprojects that publish to Maven
+**Extends:** `com.stano.java` (plus `maven-publish`)
 **Description:** Adds sources + Javadoc JARs, configures Maven publishing to the private Stano repository.
 
 **Minimal example:**
@@ -330,8 +331,8 @@ plugins {
 
 ### `com.stano.spring-boot`
 
-**Applied to:** Spring Boot application subprojects (alongside `com.stano.java`)  
-**Prerequisite:** `BaseExtension` must be available on the root project (from `com.stano.base` or `com.stano.application`)  
+**Applied to:** Spring Boot application subprojects (alongside `com.stano.java`)
+**Prerequisite:** `BaseExtension` must be available on the root project (from `com.stano.base` or `com.stano.application`)
 **Description:** Spring Boot integration. Applies Spring Boot plugin, adds Spring + MSP dependencies, copies OTel Java agent JAR, updates `application.yml` with build metadata during resource processing.
 
 **Minimal example:**
@@ -388,7 +389,7 @@ info:
 
 ### `com.stano.sonar`
 
-**Applied to:** Root project (optional, silently skips if not configured)  
+**Applied to:** Root project (optional, silently skips if not configured)
 **Description:** SonarQube integration. Applies SonarQube plugin and configures analysis properties when host and token are provided.
 
 **Minimal example:**
@@ -432,7 +433,7 @@ plugins {
 
 ### `com.stano.docker`
 
-**Applied to:** Any project (typically root or a subproject with a Dockerfile)  
+**Applied to:** Any project (typically root or a subproject with a Dockerfile)
 **Description:** Full Docker image build, tag, and push pipeline. Uses `docker buildx build` by default for multi-platform support.
 
 **Minimal example:**
@@ -510,7 +511,7 @@ docker {
 
 ### `com.stano.docker-compose`
 
-**Applied to:** Any project  
+**Applied to:** Any project
 **Description:** Template-based Docker Compose file generation. Substitutes dependency versions and custom tokens into a template, then provides tasks to start/stop services.
 
 **Minimal example:**
@@ -570,7 +571,7 @@ services:
 
 ### `com.stano.docker-run`
 
-**Applied to:** Any project  
+**Applied to:** Any project
 **Description:** Configures a named Docker container with ports, volumes, environment, and network. Provides tasks to run, stop, inspect, and remove the container.
 
 **Minimal example:**
