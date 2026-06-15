@@ -24,3 +24,10 @@ dependencies {
 
   testImplementation(testFixtures(project(":gradle-plugins-base")))
 }
+
+tasks.processResources {
+  inputs.property("version", project.version)
+  filesMatching("**/stano-plugins.properties") {
+    expand("version" to project.version)
+  }
+}
