@@ -29,6 +29,13 @@ public class ConfigureJacocoFeature implements PluginFeature {
                                   filtered.from(project.fileTree(file).exclude("**/generated/**")));
                       return filtered;
                     }));
+    jacocoReport
+        .getExecutionData()
+        .setFrom(
+            project
+                .getRootProject()
+                .fileTree(project.getRootProject().getRootDir())
+                .include("**/build/jacoco/*.exec"));
     Task testTask = project.getTasks().getByName("test");
     testTask.finalizedBy("jacocoTestReport");
   }
