@@ -12,7 +12,13 @@ gradlePlugin {
       id = "com.stano.base"
       implementationClass = "com.stano.gradle.base.BasePlugin"
       displayName = "Base Plugin"
-      description = "Root-project prerequisite. Registers BaseExtension and adds jacocoRootReport. Must be applied to the root project before any other stano plugin."
+      description = "Root-project prerequisite for all com.stano plugins. " +
+        "Registers the 'root' BaseExtension exposing cross-project configuration: " +
+        "javaVersion (default '21'), contextName, mspVersion, Docker registry coordinates, " +
+        "Pact Broker coordinates, and lazy CI metadata providers (branch name, commit hash, " +
+        "commit timestamp, build number). " +
+        "Registers the jacocoRootReport task that aggregates JaCoCo coverage across all subprojects. " +
+        "Must be applied to the root project before any other com.stano plugin."
       tags = listOf("convention", "jacoco", "java")
     }
   }

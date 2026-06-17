@@ -11,7 +11,11 @@ gradlePlugin {
       id = "com.stano.application"
       implementationClass = "com.stano.gradle.application.ApplicationPlugin"
       displayName = "Application Plugin"
-      description = "Extends com.stano.base for application builds. Sets project.version from ProjectVersionProvider and applies jacoco to the root."
+      description = "Extends com.stano.base for multi-module application builds. " +
+        "Applies the base and jacoco plugins to the root project. " +
+        "Automatically derives project.version from git metadata: " +
+        "'<commitTimestamp>-<commitHash>' (or '<commitTimestamp>-<commitHash>-<buildNumber>' in CI). " +
+        "Inherits the 'root' BaseExtension and the jacocoRootReport aggregate coverage task."
       tags = listOf("convention", "application", "jacoco")
     }
   }

@@ -11,7 +11,10 @@ gradlePlugin {
       id = "com.stano.library"
       implementationClass = "com.stano.gradle.library.LibraryPlugin"
       displayName = "Library Plugin"
-      description = "Extends com.stano.base for multi-module library builds. Applies base and jacoco to the root project."
+      description = "Extends com.stano.base for multi-module library builds. " +
+        "Applies the base and jacoco plugins to the root project. " +
+        "Does not set a project version — intended for library repositories that manage versioning separately. " +
+        "Inherits the 'root' BaseExtension and the jacocoRootReport aggregate coverage task."
       tags = listOf("convention", "library", "jacoco")
     }
   }

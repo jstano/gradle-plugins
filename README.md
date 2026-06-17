@@ -40,7 +40,7 @@ This **must** be the first plugin block, before `rootProject.name`:
 
 ```kotlin
 plugins {
-  id("com.stano.settings") version "1.0.0"  // replace it with actual version
+  id("com.stano.settings") version "0.1.0"  // replace it with actual version
 }
 
 rootProject.name = "my-app"
@@ -67,7 +67,7 @@ This plugin:
 ```kotlin
 // build.gradle.kts (root project)
 plugins {
-  id("com.stano.application") version "1.0.0"
+  id("com.stano.application") version "0.1.0"
 }
 ```
 
@@ -76,7 +76,7 @@ plugins {
 ```kotlin
 // build.gradle.kts (root project)
 plugins {
-  id("com.stano.library") version "1.0.0"
+  id("com.stano.library") version "0.1.0"
 }
 ```
 
@@ -85,11 +85,11 @@ plugins {
 ```kotlin
 // build.gradle.kts (each Java/Kotlin subproject)
 plugins {
-  id("com.stano.java") version "1.0.0"
+  id("com.stano.java") version "0.1.0"
 }
 
 // For a library that publishes to Maven:
-// id("com.stano.java-library") version "1.0.0"
+// id("com.stano.java-library") version "0.1.0"
 ```
 
 ---
@@ -105,7 +105,7 @@ plugins {
 
 ```kotlin
 plugins {
-  id("com.stano.settings") version "1.0.0"
+  id("com.stano.settings") version "0.1.0"
 }
 
 rootProject.name = "my-project"
@@ -148,7 +148,7 @@ buildCacheSettings {
 ```kotlin
 // build.gradle.kts (root project)
 plugins {
-  id("com.stano.base") version "1.0.0"
+  id("com.stano.base") version "0.1.0"
 }
 
 // (Optional) Configure via root extension:
@@ -202,7 +202,7 @@ extensions.getByType<BaseExtension>().apply {
 ```kotlin
 // build.gradle.kts (root project)
 plugins {
-  id("com.stano.application") version "1.0.0"
+  id("com.stano.application") version "0.1.0"
 }
 ```
 
@@ -224,7 +224,7 @@ The version is computed as:
 ```kotlin
 // build.gradle.kts (root project)
 plugins {
-  id("com.stano.library") version "1.0.0"
+  id("com.stano.library") version "0.1.0"
 }
 
 version = "1.2.3"  // manage version yourself
@@ -243,11 +243,11 @@ version = "1.2.3"  // manage version yourself
 ```kotlin
 // build.gradle.kts (subproject)
 plugins {
-  id("com.stano.java") version "1.0.0"
+  id("com.stano.java") version "0.1.0"
 }
 
 dependencies {
-  implementation("com.example:my-lib:1.0.0")
+  implementation("com.example:my-lib:0.1.0")
   testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
 }
 ```
@@ -301,7 +301,7 @@ dependencies {
 ```kotlin
 // build.gradle.kts (library subproject)
 plugins {
-  id("com.stano.java-library") version "1.0.0"
+  id("com.stano.java-library") version "0.1.0"
 }
 
 // Optional: prefix artifact IDs for disambiguation in multi-module builds
@@ -340,8 +340,8 @@ plugins {
 ```kotlin
 // build.gradle.kts (Spring Boot subproject)
 plugins {
-  id("com.stano.java") version "1.0.0"
-  id("com.stano.spring-boot") version "1.0.0"
+  id("com.stano.java") version "0.1.0"
+  id("com.stano.spring-boot") version "0.1.0"
 }
 
 dependencies {
@@ -397,7 +397,7 @@ info:
 ```kotlin
 // build.gradle.kts (root project)
 plugins {
-  id("com.stano.sonar") version "1.0.0"
+  id("com.stano.sonar") version "0.1.0"
 }
 
 // Configure via gradle.properties or environment:
@@ -441,7 +441,7 @@ plugins {
 ```kotlin
 // build.gradle.kts
 plugins {
-  id("com.stano.docker") version "1.0.0"
+  id("com.stano.docker") version "0.1.0"
 }
 
 docker {
@@ -519,7 +519,7 @@ docker {
 ```kotlin
 // build.gradle.kts
 plugins {
-  id("com.stano.docker-compose") version "1.0.0"
+  id("com.stano.docker-compose") version "0.1.0"
 }
 
 dockerCompose {
@@ -579,7 +579,7 @@ services:
 ```kotlin
 // build.gradle.kts
 plugins {
-  id("com.stano.docker-run") version "1.0.0"
+  id("com.stano.docker-run") version "0.1.0"
 }
 
 dockerRun {
@@ -667,7 +667,7 @@ my-app/
 
 ```kotlin
 plugins {
-  id("com.stano.settings") version "1.0.0"
+  id("com.stano.settings") version "0.1.0"
 }
 
 rootProject.name = "my-app"
@@ -680,8 +680,8 @@ include("app", "lib-common")
 
 ```kotlin
 plugins {
-  id("com.stano.application") version "1.0.0"
-  id("com.stano.sonar") version "1.0.0"
+  id("com.stano.application") version "0.1.0"
+  id("com.stano.sonar") version "0.1.0"
 }
 
 extensions.getByType<com.stano.gradle.base.BaseExtension>().apply {
@@ -696,9 +696,9 @@ extensions.getByType<com.stano.gradle.base.BaseExtension>().apply {
 
 ```kotlin
 plugins {
-  id("com.stano.java") version "1.0.0"
-  id("com.stano.spring-boot") version "1.0.0"
-  id("com.stano.docker") version "1.0.0"
+  id("com.stano.java") version "0.1.0"
+  id("com.stano.spring-boot") version "0.1.0"
+  id("com.stano.docker") version "0.1.0"
 }
 
 dependencies {
@@ -716,7 +716,7 @@ docker {
 
 ```kotlin
 plugins {
-  id("com.stano.java-library") version "1.0.0"
+  id("com.stano.java-library") version "0.1.0"
 }
 
 dependencies {
@@ -761,7 +761,7 @@ my-lib-suite/
 
 ```kotlin
 plugins {
-  id("com.stano.settings") version "1.0.0"
+  id("com.stano.settings") version "0.1.0"
 }
 
 rootProject.name = "my-lib-suite"
@@ -772,7 +772,7 @@ include("core", "spring-integration", "testing-utils")
 
 ```kotlin
 plugins {
-  id("com.stano.library") version "1.0.0"
+  id("com.stano.library") version "0.1.0"
 }
 
 version = "1.2.3"  // managed in gradle.properties or here
@@ -782,7 +782,7 @@ version = "1.2.3"  // managed in gradle.properties or here
 
 ```kotlin
 plugins {
-  id("com.stano.java-library") version "1.0.0"
+  id("com.stano.java-library") version "0.1.0"
 }
 
 dependencies {
@@ -794,7 +794,7 @@ dependencies {
 
 ```kotlin
 plugins {
-  id("com.stano.java-library") version "1.0.0"
+  id("com.stano.java-library") version "0.1.0"
 }
 
 dependencies {

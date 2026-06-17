@@ -11,7 +11,14 @@ gradlePlugin {
       id = "com.stano.settings"
       implementationClass = "com.stano.gradle.settings.SettingsPlugin"
       displayName = "Settings Plugin"
-      description = "Settings-level plugin. Configures dependency resolution management, S3 build cache, and pins Kotlin JVM plugin version."
+      description = "Settings-level plugin applied in settings.gradle. " +
+        "Configures dependency resolution management with mavenLocal(), mavenCentral(), " +
+        "and an optional private stano-maven repository. " +
+        "Configures local build cache and optional S3 remote build cache " +
+        "(enabled via STANO_BUILD_CACHE_TYPE=s3; configured via STANO_BUILD_CACHE_S3_* variables). " +
+        "Pins the Kotlin JVM plugin to a fixed version and self-pins all com.stano plugins " +
+        "to the version bundled with this plugin. " +
+        "Exposes a buildCacheSettings DSL to customize the S3 cache key prefix."
       tags = listOf("convention", "settings", "dependency-management")
     }
   }
