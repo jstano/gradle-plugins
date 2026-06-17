@@ -50,9 +50,9 @@ public class SpringBootPlugin implements Plugin<Project> {
         Copy.class,
         task -> {
           task.setGroup("Build");
-          task.setDescription("Copies opentelemetry-javaagent jar to build/libs");
+          task.setDescription("Copies opentelemetry-javaagent jar to build/otel");
           task.from(otelJavaagentJars);
-          task.into(project.getLayout().getBuildDirectory().dir("libs"));
+          task.into(project.getLayout().getBuildDirectory().dir("otel"));
           task.doFirst(
               t -> {
                 if (otelJavaagentJars.isEmpty()) {

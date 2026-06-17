@@ -15,6 +15,12 @@ public class ConfigureTestPluginFeature implements PluginFeature {
     testTask.setMaxHeapSize("4096m");
     testTask.jvmArgs(
         "--add-opens", "java.base/java.lang=ALL-UNNAMED", "-Dhttp.agent=wtf", "-Xshare:off");
+    testTask.doFirst(
+        task ->
+            project.getConfigurations().getByName("testRuntimeClasspath").getFiles().stream()
+                .filter(f -> f.getName().contains("byte-buddy-agent"))
+                .findFirst()
+                .ifPresent(f -> testTask.jvmArgs("-javaagent:" + f.getAbsolutePath())));
     testTask.useJUnitPlatform();
     var jacocoTestReport = project.getTasks().findByName("jacocoTestReport");
     if (jacocoTestReport != null) {

@@ -37,6 +37,7 @@ public class ConfigureDefaultDependenciesFeature implements PluginFeature {
       dependencies.add("compileOnly", "org.jetbrains:annotations");
       dependencies.add("testImplementation", "com.stano:msp-test-starter");
       dependencies.add("testRuntimeOnly", "org.junit.platform:junit-platform-launcher");
+      dependencies.add("testRuntimeOnly", "net.bytebuddy:byte-buddy-agent");
     }
     configureMapStructAnnotationProcessor(project);
   }
