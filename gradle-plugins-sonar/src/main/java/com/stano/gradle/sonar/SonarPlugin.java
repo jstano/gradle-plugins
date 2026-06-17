@@ -36,13 +36,6 @@ class SonarPlugin implements Plugin<Project> {
               properties.property("sonar.qualitygate.wait", true);
             }
           });
-    } else {
-      System.out.println("*************************");
-      System.out.println("Sonar not enabled");
-      System.out.printf("sonarEnabled: %s\n", sonarEnabled);
-      System.out.printf("sonarHostUrl: %s\n", sonarHostUrl);
-      System.out.printf("sonarToken: %s\n", sonarToken);
-      System.out.println("*************************");
     }
   }
 
