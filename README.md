@@ -1,6 +1,10 @@
 # gradle-plugins
 
-A suite of Gradle plugins for building Java/Kotlin applications and libraries with sensible, production-ready defaults. Plugins handle compiler configuration, test execution, code formatting, JaCoCo coverage aggregation, Docker builds, SonarQube integration, and more.
+A suite of Gradle plugins for building opinionated Spring Boot applications that follow clean architecture principles. These plugins are the build-system companion to the [Modular Spring Platform (MSP)](https://github.com/jstano/modular-spring-platform) — they wire up the compiler, formatter, test runner, JaCoCo coverage, Docker build, and SonarQube integration so teams can focus on domain logic rather than Gradle configuration.
+
+## About the Modular Spring Platform
+
+These plugins are designed for use with the [Modular Spring Platform (MSP)](https://github.com/jstano/modular-spring-platform), an opinionated framework for building modular Spring Boot applications structured around clean architecture layers (domain, application, infrastructure, web). The plugins handle the build plumbing — BOM imports, annotation processors, OTel agent packaging, Docker image naming conventions — leaving the MSP libraries to enforce architectural boundaries at the code level.
 
 ## Overview
 
@@ -829,3 +833,4 @@ dependencies {
 ### Useful Links
 
 * [Gradle S3 Build Cache Plugin](https://github.com/burrunan/gradle-s3-build-cache)
+* [Modular Spring Platform (MSP)](https://github.com/jstano/modular-spring-platform)
