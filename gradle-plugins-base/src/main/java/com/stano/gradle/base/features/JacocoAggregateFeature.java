@@ -1,7 +1,5 @@
 package com.stano.gradle.base.features;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.concurrent.Callable;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
@@ -21,7 +19,6 @@ public class JacocoAggregateFeature {
             task -> {
               ConfigurableFileCollection sourceFiles = project.files();
               ConfigurableFileCollection classFiles = project.files();
-              Map<File, File> classDirToApGenDir = new LinkedHashMap<>();
               project
                   .getSubprojects()
                   .forEach(
@@ -49,16 +46,7 @@ public class JacocoAggregateFeature {
                             SourceSet main = sourceSets.findByName("main");
                             if (main != null && jacocoEnabled) {
                               sourceFiles.from(main.getAllSource().getSrcDirs());
-                              for (File classDir : main.getOutput().getClassesDirs()) {
-                                classFiles.from(classDir);
-                                File apGenDir =
-                                    sp.getLayout()
-                                        .getBuildDirectory()
-                                        .dir("generated/sources/annotationProcessor/java/main")
-                                        .get()
-                                        .getAsFile();
-                                classDirToApGenDir.put(classDir, apGenDir);
-                              }
+                              classFiles.from(main.getOutput().getClassesDirs());
                             }
                           }
                         }
@@ -76,29 +64,9 @@ public class JacocoAggregateFeature {
                                 classFiles
                                     .getFiles()
                                     .forEach(
-                                        file -> {
-                                          File apGenDir = classDirToApGenDir.get(file);
-                                          if (apGenDir != null) {
+                                        file ->
                                             filtered.from(
-                                                project
-                                                    .fileTree(file)
-                                                    .exclude("**/generated/**")
-                                                    .exclude(
-                                                        element -> {
-                                                          String src =
-                                                              element
-                                                                  .getRelativePath()
-                                                                  .getPathString()
-                                                                  .replaceAll(
-                                                                      "\\$[^/]+\\.class$", ".class")
-                                                                  .replace(".class", ".java");
-                                                          return new File(apGenDir, src).exists();
-                                                        }));
-                                          } else {
-                                            filtered.from(
-                                                project.fileTree(file).exclude("**/generated/**"));
-                                          }
-                                        });
+                                                project.fileTree(file).exclude("**/generated/**")));
                                 return filtered;
                               }));
               task.getReports().getXml().getRequired().set(true);
