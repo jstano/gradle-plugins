@@ -361,6 +361,27 @@ Enforced by Spotless (see `.editorconfig` and `build.gradle.kts`):
 
 CI will reject commits that fail `spotlessCheck`.
 
+## Testing Locally Before Publishing
+
+To test plugin changes in a consumer project before publishing, first publish to your local Maven repository:
+
+```bash
+./gradlew publishToMavenLocal
+```
+
+Then in the consumer project's `settings.gradle.kts`, add `mavenLocal()` as the first repository in `pluginManagement`:
+
+```kotlin
+pluginManagement {
+  repositories {
+    mavenLocal()
+    gradlePluginPortal()
+  }
+}
+```
+
+Gradle will resolve plugins from your local Maven cache before checking the Portal, picking up your unpublished changes.
+
 ## Publishing
 
 Plugins are published to two repositories automatically in CI:
