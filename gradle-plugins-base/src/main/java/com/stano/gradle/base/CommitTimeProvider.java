@@ -1,6 +1,8 @@
 package com.stano.gradle.base;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -12,16 +14,21 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.gradle.api.Project;
 
-public class CommitTimeProvider {
-  private final Project project;
+public class CommitTimeProvider implements Serializable {
+  private final File gitRootDir;
 
+  public CommitTimeProvider(File gitRootDir) {
+    this.gitRootDir = gitRootDir;
+  }
+
+  @Deprecated
   public CommitTimeProvider(Project project) {
-    this.project = project;
+    this(project.getRootDir());
   }
 
   @Override
   public String toString() {
-    try (Git git = Git.open(project.getRootDir())) {
+    try (Git git = Git.open(gitRootDir)) {
       Ref head = git.getRepository().getRefDatabase().findRef("HEAD");
       if (head != null && head.getObjectId() != null) {
         RevCommit commit = new RevWalk(git.getRepository()).parseCommit(head.getObjectId());

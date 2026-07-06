@@ -1,5 +1,6 @@
 package com.stano.gradle.springboot;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.stano.gradle.base.features.BaseExtensionFeature;
@@ -35,5 +36,35 @@ class SpringBootPluginTest {
     project.getPluginManager().apply("java");
     project.getPluginManager().apply("com.stano.spring-boot");
     assertTrue(project.getTasks().getNames().contains("processResources"));
+  }
+
+  @Test
+  void shouldCreateOtelAgentConfiguration() {
+    var project = ProjectBuilder.builder().build();
+    project.getExtensions().getExtraProperties().set("mspVersion", "1.0.0");
+    new BaseExtensionFeature().apply(project);
+    project.getPluginManager().apply("java");
+    project.getPluginManager().apply("com.stano.spring-boot");
+    assertNotNull(project.getConfigurations().findByName("otelAgent"));
+  }
+
+  @Test
+  void shouldRegisterVerifyOtelJavaagentTask() {
+    var project = ProjectBuilder.builder().build();
+    project.getExtensions().getExtraProperties().set("mspVersion", "1.0.0");
+    new BaseExtensionFeature().apply(project);
+    project.getPluginManager().apply("java");
+    project.getPluginManager().apply("com.stano.spring-boot");
+    assertTrue(project.getTasks().getNames().contains("verifyOtelJavaagent"));
+  }
+
+  @Test
+  void shouldRegisterBootJarTask() {
+    var project = ProjectBuilder.builder().build();
+    project.getExtensions().getExtraProperties().set("mspVersion", "1.0.0");
+    new BaseExtensionFeature().apply(project);
+    project.getPluginManager().apply("java");
+    project.getPluginManager().apply("com.stano.spring-boot");
+    assertTrue(project.getTasks().getNames().contains("bootJar"));
   }
 }

@@ -64,11 +64,12 @@ public class BaseExtensionFeature implements PluginFeature {
     baseExtension.setContextName(getContextName(project));
     baseExtension.setBuildNumber(getBuildNumber(project));
     baseExtension.setBuildTime(LocalDateTime.now(ZoneId.of("America/Chicago")));
-    baseExtension.setRepositoryUrlProvider(new RepositoryUrlProvider(project));
-    baseExtension.setRepositoryOrganizationProvider(new RepositoryOrganizationProvider(project));
-    baseExtension.setBranchNameProvider(new BranchNameProvider(project));
-    baseExtension.setCommitHashProvider(new CommitHashProvider(project));
-    baseExtension.setCommitTimeProvider(new CommitTimeProvider(project));
+    baseExtension.setRepositoryUrlProvider(new RepositoryUrlProvider(project.getRootDir()));
+    baseExtension.setRepositoryOrganizationProvider(
+        new RepositoryOrganizationProvider(project.getRootDir()));
+    baseExtension.setBranchNameProvider(new BranchNameProvider(project.getRootDir()));
+    baseExtension.setCommitHashProvider(new CommitHashProvider(project.getRootDir()));
+    baseExtension.setCommitTimeProvider(new CommitTimeProvider(project.getRootDir()));
     project.getExtensions().add(BASE_EXTENSION_NAME, baseExtension);
   }
 

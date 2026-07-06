@@ -1,6 +1,7 @@
 package com.stano.gradle.docker;
 
 import com.google.common.collect.ImmutableSet;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -107,19 +108,6 @@ public class DockerPlugin implements Plugin<Project> {
                 task -> {
                   task.setGroup("Docker");
                   task.setDescription("Copies Docker image url to a file.");
-                  task.doLast(
-                      ignored -> {
-                        String content = ext.getName();
-                        String fileName =
-                            project.getLayout().getBuildDirectory().get().getAsFile()
-                                + "/docker-image-url.txt";
-                        try {
-                          Files.writeString(Path.of(fileName), content);
-                        } catch (IOException e) {
-                          throw new GradleException("Failed to write docker image URL file", e);
-                        }
-                        System.out.println("File created successfully: " + fileName);
-                      });
                 });
     copyDockerImageUrl.shouldRunAfter(pushAllTags);
     project
@@ -151,7 +139,8 @@ public class DockerPlugin implements Plugin<Project> {
     project.afterEvaluate(
         p -> {
           ext.resolvePathsAndValidate();
-          String dockerDir = p.getLayout().getBuildDirectory().get().getAsFile() + "/docker";
+          File buildDirFile = p.getLayout().getBuildDirectory().get().getAsFile();
+          String dockerDir = buildDirFile + "/docker";
           clean.delete(dockerDir);
           prepare.from(ext.getCopySpec());
           prepare.from(
@@ -161,10 +150,50 @@ public class DockerPlugin implements Plugin<Project> {
               });
           prepare.into(dockerDir);
           exec.setWorkingDir(dockerDir);
-          exec.commandLine(buildCommandLine(ext));
           exec.dependsOn(ext.getDependencies());
           exec.getLogging().captureStandardOutput(LogLevel.INFO);
           exec.getLogging().captureStandardError(LogLevel.ERROR);
+
+          boolean buildx = ext.getBuildx();
+          Set<String> platform = ext.getPlatform();
+          boolean noCache = ext.getNoCache();
+          String network = ext.getNetwork();
+          Map<String, String> buildArgs = ext.getBuildArgs();
+          boolean pull = ext.getPull();
+          boolean load = ext.getLoad();
+          boolean push = ext.getPush();
+          String builder = ext.getBuilder();
+          java.util.function.Supplier<String> nameSupplier = ext.getNameSupplier();
+          java.util.function.Supplier<Map<String, String>> labelsSupplier = ext.getLabelsSupplier();
+
+          exec.doFirst(
+              task ->
+                  exec.commandLine(
+                      buildCommandLine(
+                          buildx,
+                          platform,
+                          noCache,
+                          network,
+                          buildArgs,
+                          pull,
+                          load,
+                          push,
+                          builder,
+                          nameSupplier.get(),
+                          labelsSupplier.get())));
+
+          copyDockerImageUrl.doLast(
+              ignored -> {
+                String content = nameSupplier.get();
+                String fileName = buildDirFile + "/docker-image-url.txt";
+                try {
+                  Files.writeString(Path.of(fileName), content);
+                } catch (IOException e) {
+                  throw new GradleException("Failed to write docker image URL file", e);
+                }
+                System.out.println("File created successfully: " + fileName);
+              });
+
           Map<String, TagConfig> tags = new LinkedHashMap<>();
           for (Map.Entry<String, String> entry : ext.getNamedTags().entrySet()) {
             String taskName = entry.getKey();
@@ -179,7 +208,8 @@ public class DockerPlugin implements Plugin<Project> {
             String computedTag = unresolvedTagName;
             tags.put(
                 taskName,
-                new TagConfig(unresolvedTagName, () -> computeName(ext.getName(), computedTag)));
+                new TagConfig(
+                    unresolvedTagName, () -> computeName(nameSupplier.get(), computedTag)));
           }
           for (Map.Entry<String, TagConfig> entry : tags.entrySet()) {
             String taskName = entry.getKey();
@@ -194,8 +224,14 @@ public class DockerPlugin implements Plugin<Project> {
                           task.setDescription(
                               "Tags Docker image with tag '" + tagConfig.tagName + "'");
                           task.setWorkingDir(dockerDir);
-                          task.commandLine("docker", "tag", ext.getName(), tagConfig.tagTask.get());
                           task.dependsOn(exec);
+                          task.doFirst(
+                              t ->
+                                  task.commandLine(
+                                      "docker",
+                                      "tag",
+                                      nameSupplier.get(),
+                                      tagConfig.tagTask.get()));
                         });
             tag.dependsOn(tagSubTask);
             Exec pushSubTask =
@@ -210,8 +246,9 @@ public class DockerPlugin implements Plugin<Project> {
                                   + tagConfig.tagName
                                   + "' to configured Docker Hub");
                           task.setWorkingDir(dockerDir);
-                          task.commandLine("docker", "push", tagConfig.tagTask.get());
                           task.dependsOn(tagSubTask);
+                          task.doFirst(
+                              t -> task.commandLine("docker", "push", tagConfig.tagTask.get()));
                         });
             pushAllTags.dependsOn(pushSubTask);
           }
@@ -219,47 +256,56 @@ public class DockerPlugin implements Plugin<Project> {
         });
   }
 
-  private List<String> buildCommandLine(DockerExtension ext) {
+  private List<String> buildCommandLine(
+      boolean buildx,
+      Set<String> platform,
+      boolean noCache,
+      String network,
+      Map<String, String> buildArgs,
+      boolean pull,
+      boolean load,
+      boolean push,
+      String builder,
+      String resolvedName,
+      Map<String, String> resolvedLabels) {
     List<String> buildCommandLine = new ArrayList<>();
     buildCommandLine.add("docker");
-    if (ext.getBuildx()) {
+    if (buildx) {
       buildCommandLine.addAll(List.of("buildx", "build"));
-      Set<String> platform = ext.getPlatform();
-      if (platform.isEmpty()) {
-        platform = ImmutableSet.of("linux/amd64");
-      }
-      buildCommandLine.addAll(List.of("--platform", String.join(",", platform)));
+      Set<String> effectivePlatform =
+          platform.isEmpty() ? ImmutableSet.of("linux/amd64") : platform;
+      buildCommandLine.addAll(List.of("--platform", String.join(",", effectivePlatform)));
       buildCommandLine.add("--no-cache");
       buildCommandLine.add("--pull");
-      if (ext.getLoad()) {
+      if (load) {
         buildCommandLine.add("--load");
       }
-      if (ext.getPush()) {
+      if (push) {
         buildCommandLine.add("--push");
-        if (ext.getLoad()) {
+        if (load) {
           throw new GradleException("cannot combine 'push' and 'load' options");
         }
       }
-      if (ext.getBuilder() != null) {
-        buildCommandLine.addAll(List.of("--builder", ext.getBuilder()));
+      if (builder != null) {
+        buildCommandLine.addAll(List.of("--builder", builder));
       }
     } else {
       buildCommandLine.add("build");
     }
-    if (ext.getNoCache()) {
+    if (noCache) {
       buildCommandLine.add("--no-cache");
     }
-    if (ext.getNetwork() != null) {
-      buildCommandLine.addAll(List.of("--network", ext.getNetwork()));
+    if (network != null) {
+      buildCommandLine.addAll(List.of("--network", network));
     }
-    if (!ext.getBuildArgs().isEmpty()) {
-      for (Map.Entry<String, String> buildArg : ext.getBuildArgs().entrySet()) {
+    if (!buildArgs.isEmpty()) {
+      for (Map.Entry<String, String> buildArg : buildArgs.entrySet()) {
         buildCommandLine.addAll(
             List.of("--build-arg", buildArg.getKey() + "=" + buildArg.getValue()));
       }
     }
-    if (!ext.getLabels().isEmpty()) {
-      for (Map.Entry<String, String> label : ext.getLabels().entrySet()) {
+    if (!resolvedLabels.isEmpty()) {
+      for (Map.Entry<String, String> label : resolvedLabels.entrySet()) {
         if (!LABEL_KEY_PATTERN.matcher(label.getKey()).matches()) {
           throw new GradleException(
               String.format(
@@ -270,10 +316,10 @@ public class DockerPlugin implements Plugin<Project> {
         buildCommandLine.addAll(List.of("--label", label.getKey() + "=" + label.getValue()));
       }
     }
-    if (ext.getPull()) {
+    if (pull) {
       buildCommandLine.add("--pull");
     }
-    buildCommandLine.addAll(List.of("-t", ext.getName(), "."));
+    buildCommandLine.addAll(List.of("-t", resolvedName, "."));
     return buildCommandLine;
   }
 

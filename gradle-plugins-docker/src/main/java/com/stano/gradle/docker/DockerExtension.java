@@ -9,19 +9,29 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.file.CopySpec;
 
+/**
+ * Never capture this extension instance inside a Task action (doFirst/doLast) — it holds a live
+ * Project reference and is not configuration-cache-safe. Capture the result of {@link
+ * #getNameSupplier()} / {@link #getLabelsSupplier()} (or plain values) as local variables before
+ * building any execution-time closure.
+ */
 public class DockerExtension {
   private static final String DEFAULT_DOCKERFILE_PATH = "Dockerfile";
-  private Project project;
+  private transient Project project;
   private String name;
+  private Supplier<String> defaultNameSupplier;
   private File dockerfile;
   private Set<Task> dependencies = ImmutableSet.of();
   private Set<String> tags = ImmutableSet.of();
   private Map<String, String> namedTags = new HashMap<>();
   private Map<String, String> labels = ImmutableMap.of();
+  private Supplier<Map<String, String>> defaultLabelsSupplier;
+  private boolean labelsExplicitlySet = false;
   private Map<String, String> buildArgs = ImmutableMap.of();
   private boolean pull = false;
   private boolean noCache = false;
@@ -45,10 +55,28 @@ public class DockerExtension {
     this.name = name;
   }
 
+  void setDefaultNameSupplier(Supplier<String> defaultNameSupplier) {
+    this.defaultNameSupplier = defaultNameSupplier;
+  }
+
+  public Supplier<String> getNameSupplier() {
+    String explicitName = this.name;
+    Supplier<String> fallback = this.defaultNameSupplier;
+    return () -> {
+      if (!Strings.isNullOrEmpty(explicitName)) {
+        return explicitName;
+      }
+      Preconditions.checkArgument(
+          fallback != null, "name is a required docker configuration item.");
+      String resolved = fallback.get();
+      Preconditions.checkArgument(
+          !Strings.isNullOrEmpty(resolved), "name is a required docker configuration item.");
+      return resolved;
+    };
+  }
+
   public String getName() {
-    Preconditions.checkArgument(
-        !Strings.isNullOrEmpty(name), "name is a required docker configuration item.");
-    return name;
+    return getNameSupplier().get();
   }
 
   public void setDockerfile(File dockerfile) {
@@ -106,11 +134,23 @@ public class DockerExtension {
   }
 
   public Map<String, String> getLabels() {
-    return labels;
+    return getLabelsSupplier().get();
+  }
+
+  void setDefaultLabelsSupplier(Supplier<Map<String, String>> defaultLabelsSupplier) {
+    this.defaultLabelsSupplier = defaultLabelsSupplier;
+  }
+
+  public Supplier<Map<String, String>> getLabelsSupplier() {
+    boolean explicit = this.labelsExplicitlySet;
+    Map<String, String> explicitLabels = this.labels;
+    Supplier<Map<String, String>> fallback = this.defaultLabelsSupplier;
+    return () -> (explicit || fallback == null) ? explicitLabels : fallback.get();
   }
 
   public void labels(Map<String, String> labels) {
     this.labels = ImmutableMap.copyOf(labels);
+    this.labelsExplicitlySet = true;
   }
 
   public File getResolvedDockerfile() {

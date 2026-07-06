@@ -1,6 +1,8 @@
 package com.stano.gradle.base;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -8,16 +10,21 @@ import org.eclipse.jgit.api.Git;
 import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 
-public class RepositoryOrganizationProvider {
-  private final Project project;
+public class RepositoryOrganizationProvider implements Serializable {
+  private final File gitRootDir;
 
+  public RepositoryOrganizationProvider(File gitRootDir) {
+    this.gitRootDir = gitRootDir;
+  }
+
+  @Deprecated
   public RepositoryOrganizationProvider(Project project) {
-    this.project = project;
+    this(project.getRootDir());
   }
 
   @Override
   public String toString() {
-    try (Git git = Git.open(project.getRootDir())) {
+    try (Git git = Git.open(gitRootDir)) {
       String repositoryUrl = git.getRepository().getConfig().getString("remote", "origin", "url");
       if (repositoryUrl == null) {
         return null;

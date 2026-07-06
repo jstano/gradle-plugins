@@ -2,14 +2,12 @@ package com.stano.gradle.springboot;
 
 import com.stano.gradle.base.BaseExtension;
 import com.stano.gradle.springboot.features.ConfigureBuildInfoFeature;
+import com.stano.gradle.springboot.features.ConfigureOtelJavaagentFeature;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
-import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.file.DuplicatesStrategy;
-import org.gradle.api.file.FileCollection;
 import org.gradle.api.plugins.PluginContainer;
-import org.gradle.api.tasks.Copy;
 import org.gradle.api.tasks.TaskContainer;
 import org.springframework.boot.gradle.tasks.bundling.BootJar;
 
@@ -17,6 +15,7 @@ public class SpringBootPlugin implements Plugin<Project> {
   @Override
   public void apply(Project project) {
     new ConfigureBuildInfoFeature().apply(project);
+    new ConfigureOtelJavaagentFeature().apply(project);
     BaseExtension baseExtension =
         project.getRootProject().getExtensions().getByType(BaseExtension.class);
     PluginContainer plugins = project.getPlugins();
@@ -42,26 +41,5 @@ public class SpringBootPlugin implements Plugin<Project> {
           bootJar.getArchiveBaseName().set(project.getRootProject().getName());
           bootJar.setDuplicatesStrategy(DuplicatesStrategy.FAIL);
         });
-    Configuration runtimeClasspath = project.getConfigurations().getByName("runtimeClasspath");
-    FileCollection otelJavaagentJars =
-        runtimeClasspath.filter(f -> f.getName().startsWith("opentelemetry-javaagent"));
-    tasks.register(
-        "copyOtelJavaagent",
-        Copy.class,
-        task -> {
-          task.setGroup("Build");
-          task.setDescription("Copies opentelemetry-javaagent jar to build/otel");
-          task.from(otelJavaagentJars);
-          task.into(project.getLayout().getBuildDirectory().dir("otel"));
-          task.doFirst(
-              t -> {
-                if (otelJavaagentJars.isEmpty()) {
-                  project
-                      .getLogger()
-                      .warn("opentelemetry-javaagent jar not found in project dependencies");
-                }
-              });
-        });
-    tasks.named("assemble", t -> t.dependsOn("copyOtelJavaagent"));
   }
 }

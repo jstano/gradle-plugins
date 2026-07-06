@@ -1,8 +1,14 @@
 package com.stano.gradle.docker;
 
 import com.stano.gradle.base.BaseExtension;
+import com.stano.gradle.base.BranchNameProvider;
+import com.stano.gradle.base.CommitHashProvider;
+import com.stano.gradle.base.CommitTimeProvider;
 import com.stano.gradle.base.GradlePluginUtil;
 import com.stano.gradle.base.PluginFeature;
+import com.stano.gradle.base.RepositoryOrganizationProvider;
+import com.stano.gradle.base.RepositoryUrlProvider;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -10,6 +16,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.tasks.Exec;
@@ -24,9 +31,11 @@ public class ConfigureTasks implements PluginFeature {
     configureDockerDefaults(project, dockerRegistrySettings, baseExtension);
     project.afterEvaluate(
         p -> {
+          DockerExtension dockerExtension = p.getExtensions().getByType(DockerExtension.class);
+          Supplier<String> nameSupplier = dockerExtension.getNameSupplier();
           Task loginTask = createDockerLoginTask(p, dockerRegistrySettings);
           Task logoutTask = createDockerLogoutTask(p, dockerRegistrySettings);
-          Task cleanupImageTask = createDockerCleanupImageTask(p);
+          Task cleanupImageTask = createDockerCleanupImageTask(p, nameSupplier);
           Collection<String> dockerRemoveImages =
               dockerRemoveImagesExtension.getImages().getOrElse(Collections.emptyList());
           if (!dockerRemoveImages.isEmpty()) {
@@ -105,20 +114,22 @@ public class ConfigureTasks implements PluginFeature {
         .get();
   }
 
-  private Task createDockerCleanupImageTask(Project project) {
-    DockerExtension dockerExtension = project.getExtensions().getByType(DockerExtension.class);
+  private Task createDockerCleanupImageTask(Project project, Supplier<String> nameSupplier) {
     return project
         .getTasks()
         .register(
             "dockerCleanupImage",
             Exec.class,
             exec -> {
-              List<String> args =
-                  new ArrayList<>(
-                      Arrays.asList("docker", "image", "rm", "--force", dockerExtension.getName()));
-              exec.commandLine(args.toArray());
               exec.setGroup("Docker");
               exec.setDescription("Remove docker image");
+              exec.doFirst(
+                  task -> {
+                    List<String> args =
+                        new ArrayList<>(
+                            Arrays.asList("docker", "image", "rm", "--force", nameSupplier.get()));
+                    exec.commandLine(args.toArray());
+                  });
             })
         .get();
   }
@@ -153,18 +164,23 @@ public class ConfigureTasks implements PluginFeature {
   private void configureDockerDefaults(
       Project project, DockerRegistrySettings dockerRegistrySettings, BaseExtension baseExtension) {
     DockerExtension dockerExtension = project.getExtensions().getByType(DockerExtension.class);
-    dockerExtension.labels(getStandardLabels(project, baseExtension));
+    File gitRootDir = project.getRootDir();
+    dockerExtension.setDefaultLabelsSupplier(
+        buildDefaultLabelsSupplier(gitRootDir, baseExtension.getBuildNumber()));
     boolean hasSpringBootPlugin = project.getPlugins().hasPlugin("com.stano.spring-boot");
     if (hasSpringBootPlugin) {
       String contextName = baseExtension.getContextName();
-      dockerExtension.setName(
-          String.format(
-              "%s/%s/%s/%s:%s",
-              dockerRegistrySettings.getHost(),
-              baseExtension.getRepositoryOrganizationProvider().toString(),
-              contextName.toLowerCase(),
-              baseExtension.getBranchNameProvider().toString().toLowerCase(),
-              project.getVersion()));
+      String registryHost = dockerRegistrySettings.getHost();
+      String projectVersion = String.valueOf(project.getVersion());
+      dockerExtension.setDefaultNameSupplier(
+          () ->
+              String.format(
+                  "%s/%s/%s/%s:%s",
+                  registryHost,
+                  new RepositoryOrganizationProvider(gitRootDir).toString(),
+                  contextName.toLowerCase(),
+                  new BranchNameProvider(gitRootDir).toString().toLowerCase(),
+                  projectVersion));
       Task dockerDependencyTask = project.getTasks().getByName("bootWar");
       dockerExtension.files(dockerDependencyTask.getOutputs());
       dockerExtension.buildArgs(
@@ -172,31 +188,33 @@ public class ConfigureTasks implements PluginFeature {
     }
   }
 
-  private Map<String, String> getStandardLabels(Project project, BaseExtension baseExtension) {
-    Map<String, String> labels = new HashMap<>();
-    labels.put("com.stano.build-hostname", GradlePluginUtil.getHostName());
-    labels.put("com.stano.build-username", System.getProperty("user.name"));
-    String repositoryUrl = baseExtension.getRepositoryUrlProvider().toString();
-    String branchName = baseExtension.getBranchNameProvider().toString();
-    String buildNumber = baseExtension.getBuildNumber();
-    String commitHash = baseExtension.getCommitHashProvider().toString();
-    String commitTime = baseExtension.getCommitTimeProvider().toString();
-    if (repositoryUrl != null) {
-      labels.put("com.stano.repository-url", repositoryUrl);
-    }
-    if (branchName != null) {
-      labels.put("com.stano.branch", branchName);
-    }
-    if (buildNumber != null) {
-      labels.put("com.stano.build-number", buildNumber);
-    }
-    if (commitHash != null) {
-      labels.put("com.stano.commit-hash", commitHash);
-    }
-    if (commitTime != null) {
-      labels.put("com.stano.commit-time", commitTime);
-    }
-    return labels;
+  private Supplier<Map<String, String>> buildDefaultLabelsSupplier(
+      File gitRootDir, String buildNumber) {
+    return () -> {
+      Map<String, String> labels = new HashMap<>();
+      labels.put("com.stano.build-hostname", GradlePluginUtil.getHostName());
+      labels.put("com.stano.build-username", System.getProperty("user.name"));
+      String repositoryUrl = new RepositoryUrlProvider(gitRootDir).toString();
+      String branchName = new BranchNameProvider(gitRootDir).toString();
+      String commitHash = new CommitHashProvider(gitRootDir).toString();
+      String commitTime = new CommitTimeProvider(gitRootDir).toString();
+      if (repositoryUrl != null) {
+        labels.put("com.stano.repository-url", repositoryUrl);
+      }
+      if (branchName != null) {
+        labels.put("com.stano.branch", branchName);
+      }
+      if (buildNumber != null) {
+        labels.put("com.stano.build-number", buildNumber);
+      }
+      if (commitHash != null) {
+        labels.put("com.stano.commit-hash", commitHash);
+      }
+      if (commitTime != null) {
+        labels.put("com.stano.commit-time", commitTime);
+      }
+      return labels;
+    };
   }
 
   private Map<String, String> getStandardBuildArgs(
