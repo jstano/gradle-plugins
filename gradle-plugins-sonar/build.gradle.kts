@@ -14,9 +14,8 @@ gradlePlugin {
       description = "SonarQube analysis integration. " +
         "Conditionally applies org.sonarqube and configures sonar.host.url, sonar.token, " +
         "sonar.projectKey (as '<group>:<name>'), sonar.projectName, and sonar.projectVersion. " +
-        "Silently skips (no sonarqube task is registered) when STANO_SONAR_HOST_URL " +
-        "or STANO_SONAR_TOKEN are not configured. " +
-        "Optionally enforces quality gate with build failure via com.stano.sonar.fail-build-enabled."
+        "Silently skips (no sonarqube task is registered) when SONAR_HOST_URL " +
+        "or SONAR_TOKEN are not configured."
       tags = listOf("convention", "sonarqube", "code-quality")
     }
   }

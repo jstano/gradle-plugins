@@ -14,8 +14,8 @@ plugins {
 
 sonar {
   val extraProperties = extensions.extraProperties.properties
-  val sonarHost = extraProperties["com.stano.sonar.host.url"]?.toString() ?: System.getenv("STANO_SONAR_HOST_URL")
-  val sonarToken = extraProperties["com.stano.sonar.token"]?.toString() ?: System.getenv("STANO_SONAR_TOKEN")
+  val sonarHost = extraProperties["sonar.host.url"]?.toString() ?: System.getenv("SONAR_HOST_URL")
+  val sonarToken = extraProperties["sonar.token"]?.toString() ?: System.getenv("SONAR_TOKEN")
 
   properties {
     property("sonar.host.url", sonarHost)

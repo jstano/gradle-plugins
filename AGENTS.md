@@ -49,6 +49,7 @@ Each `gradle-plugins-*` submodule is an independently published Gradle plugin. T
 | `com.stano.library` | `LibraryPlugin` | `gradle-plugins-library` | Extends `com.stano.base`. Applies `base` and `jacoco` to the root project. For multi-module **library** builds (as opposed to applications). |
 | `com.stano.java` | `JavaPlugin` | `gradle-plugins-java` | Core plugin for internal Java modules. Applies java-library, JaCoCo, Spotless (Eclipse formatter). Validates that `com.stano.base` is already on the root. |
 | `com.stano.java-library` | `JavaLibraryPlugin` | `gradle-plugins-java-library` | Extends `com.stano.java`. Adds `javadoc` + sources JARs and Maven publishing. |
+| `com.stano.maven-central-publish` | `MavenCentralPublishPlugin` | `gradle-plugins-maven-central-publish` | Adds Maven Central Portal publishing: POM metadata, GPG signing, a `staging-deploy` publication, and a `publishToMavenCentral` upload task. Composable alongside `com.stano.java-library`'s private-repo publish. All POM/developer/license/component values are set explicitly via the `mavenCentralPublish` extension — no org-wide defaults. |
 | `com.stano.kotlin` | `KotlinPlugin` | `gradle-plugins-kotlin` | Opt-in Kotlin JVM support for Java subprojects. Applies `org.jetbrains.kotlin.jvm`, configures `KotlinCompile` tasks. Requires `com.stano.java` to be applied to the subproject. |
 | `com.stano.spring-boot` | `SpringBootPlugin` | `gradle-plugins-spring-boot` | Applies `org.springframework.boot`, pins Spring Boot + MSP BOM, names the boot JAR after the root project, registers a `copyOtelJavaagent` task. |
 | `com.stano.sonar` | `SonarPlugin` | `gradle-plugins-sonar` | SonarQube integration. Silently skips (with a warning) when host/token are unconfigured. |
@@ -98,6 +99,7 @@ Root package: `com.stano.gradle`. Subpackages match the submodule's functional d
 | `com.stano.gradle.base` | `gradle-plugins-base` — shared plugin infrastructure: `BaseExtension`, `PluginFeature`, `GradlePluginUtil`, `BranchNameProvider`, case-conversion utilities, Jackson/JGit/SnakeYAML wrappers |
 | `com.stano.gradle.base.changecase` | Case-conversion utilities |
 | `com.stano.gradle.application` | `gradle-plugins-application` |
+| `com.stano.gradle.mavencentralpublish` | `gradle-plugins-maven-central-publish` — Maven Central Portal publishing: `MavenCentralPublishExtension`, POM/signing/staging-zip/upload features |
 | `com.stano.gradle.docker` | `gradle-plugins-docker` |
 | `com.stano.gradle.javalibrary` | `gradle-plugins-java-library` |
 | `com.stano.gradle.java` | `gradle-plugins-java` |

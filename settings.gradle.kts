@@ -55,6 +55,7 @@ dependencyResolutionManagement {
 include("gradle-plugins-application")
 include("gradle-plugins-base")
 include("gradle-plugins-bom")
+include("gradle-plugins-maven-central-publish")
 include("gradle-plugins-docker")
 include("gradle-plugins-java")
 include("gradle-plugins-java-library")

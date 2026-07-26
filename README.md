@@ -435,32 +435,29 @@ plugins {
 }
 
 // Configure via gradle.properties or environment:
-// com.stano.sonar.host = https://sonar.mycompany.com
-// STANO_SONAR_TOKEN = squ_abc123...
+// sonar.host.url = https://sonar.mycompany.com
+// SONAR_TOKEN = squ_abc123...
 ```
 
 **Configuration properties:**
 
 | Gradle Property | Env Variable | Purpose |
 |---|---|---|
-| `com.stano.sonar.disabled` | `STANO_SONAR_DISABLED` | Set to `true` to skip Sonar entirely |
-| `com.stano.sonar.host` | `STANO_SONAR_HOST` | SonarQube server URL |
-| `com.stano.sonar.token` | `STANO_SONAR_TOKEN` | SonarQube authentication token |
-| `com.stano.sonar.fail-build-enabled` | `STANO_SONAR_FAIL_BUILD_ENABLED` | Set to `true` to fail build on quality gate failure |
-| `sonarProjectName` | — | Override the project name used in Sonar (project property only) |
+| `sonar.host.url` | `SONAR_HOST_URL` | SonarQube server URL |
+| `sonar.token` | `SONAR_TOKEN` | SonarQube authentication token |
 
 **Behavior:**
 
-- When `disabled=false` and both `host` and `token` are configured: applies SonarQube plugin with all properties
-- When `fail-build-enabled=true`: sets `sonar.qualitygate.wait=true` (waits for quality gate before returning)
-- When not configured: prints a warning to stdout (does NOT fail the build)
+- When both `sonar.host.url` and `sonar.token` are configured (as a Gradle property or the env var fallback): applies the SonarQube plugin and sets the properties below.
+- When not configured: logs a warning and skips entirely — `org.sonarqube` is never applied, so no `sonarqube` task is registered (does NOT fail the build).
+- Any additional Gradle project property whose key starts with `sonar.` is also copied through to the Sonar extension, so consumers can set extra analysis properties directly.
 
 **SonarQube properties set:**
 
-- `sonar.host.url` = `com.stano.sonar.host`
-- `sonar.token` = `com.stano.sonar.token`
-- `sonar.projectName` = `sonarProjectName` property or `project.name`
-- `sonar.projectKey` = `{project.group}:{projectName}`
+- `sonar.host.url` — from the `sonar.host.url` property or `SONAR_HOST_URL` env var
+- `sonar.token` — from the `sonar.token` property or `SONAR_TOKEN` env var
+- `sonar.projectName` = `project.name`
+- `sonar.projectKey` = `{project.group}:{project.name}`
 - `sonar.projectVersion` = `project.version`
 
 ---
