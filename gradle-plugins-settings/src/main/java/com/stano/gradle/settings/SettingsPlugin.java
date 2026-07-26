@@ -27,6 +27,7 @@ public class SettingsPlugin implements Plugin<Settings> {
                       "com.stano.library",
                       "com.stano.java",
                       "com.stano.java-library",
+                      "com.stano.kotlin",
                       "com.stano.spring-boot",
                       "com.stano.sonar",
                       "com.stano.docker",

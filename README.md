@@ -8,12 +8,12 @@ These plugins are designed for use with the [Modular Spring Platform (MSP)](http
 
 ## Overview
 
-This project publishes 11 Gradle plugins to the Gradle Plugin Portal. The plugins are designed to work together as a cohesive build system:
+This project publishes 12 Gradle plugins to the Gradle Plugin Portal. The plugins are designed to work together as a cohesive build system:
 
 - **Settings-level**: `com.stano.settings` (configures repositories, build cache, plugin versions)
 - **Root project**: `com.stano.base`, `com.stano.application`, `com.stano.library` (set up base infrastructure and versioning)
 - **Subproject**: `com.stano.java`, `com.stano.java-library`, `com.stano.spring-boot` (configure compilers, testing, publishing)
-- **Optional infrastructure**: `com.stano.sonar` (SonarQube), `com.stano.docker*` (Docker build/run)
+- **Optional infrastructure**: `com.stano.sonar` (SonarQube), `com.stano.kotlin` (Kotlin JVM support), `com.stano.docker*` (Docker build/run)
 
 **Plugin dependency hierarchy:**
 
@@ -31,6 +31,7 @@ com.stano.java ← required for Java subprojects
 
 Optional (any project):
     com.stano.sonar
+    com.stano.kotlin (extend java for Kotlin compilation)
     com.stano.docker
     com.stano.docker-compose
     com.stano.docker-run
@@ -260,10 +261,9 @@ dependencies {
 
 **Features applied:**
 
-- Applies `java-library`, `org.jetbrains.kotlin.jvm`, `jacoco`
+- Applies `java-library`, `jacoco`
 - Spotless with Google Java Format 1.35.0 (enforced on `check` task)
 - Java compiler: toolchain from `javaVersion` (default `"21"`), incremental compilation, forked JVM with `Xmx4096m`
-- Kotlin compiler: incremental, same free compiler args as Java
 - Test execution: `useJUnitPlatform()`, `Xmx4096m`/`Xms512m` heap, JVM args for reflective access
 - JaCoCo: all `test` tasks finalize with `jacocoTestReport`; reports in `build/reports/jacoco/`
 - Automatic MSP BOM inclusion (when `mspVersion` is set):
@@ -330,6 +330,36 @@ plugins {
 | Property | Type | Purpose |
 |----------|------|---------|
 | `artifactIdPrefix` | String (project property) | If set, prefixes artifact IDs as `{prefix}-{projectName}` for disambiguation |
+
+---
+
+### `com.stano.kotlin`
+
+**Applied to:** Java subprojects that require Kotlin JVM compilation support (alongside `com.stano.java`)
+**Extends:** `com.stano.java` (transparent dependency via `plugins.apply(JavaPlugin.class)`)
+**Description:** Opt-in Kotlin JVM support. Applies the Kotlin JVM Gradle plugin and configures `KotlinCompile` tasks to use the same compiler flags as the Java compiler, with incremental compilation enabled.
+
+**Minimal example:**
+
+```kotlin
+// build.gradle.kts (subproject with Kotlin sources)
+plugins {
+  id("com.stano.java") version "0.1.0"
+  id("com.stano.kotlin") version "0.1.0"
+}
+
+dependencies {
+  implementation("org.jetbrains.kotlin:kotlin-stdlib:2.0.0")
+}
+```
+
+**Features applied:**
+
+- Applies `org.jetbrains.kotlin.jvm` plugin (version pinned via `com.stano.settings`)
+- Configures `KotlinCompile` tasks: incremental compilation, same free compiler args as Java (`-Xlint:none`, `-Xdoclint:none`, `-nowarn`, `-parameters`)
+- Kotlin compiler respects `javaVersion` toolchain from `BaseExtension` (default `"21"`)
+
+**Note:** `com.stano.java` does NOT apply Kotlin by default. Add `com.stano.kotlin` only to projects that actually compile Kotlin sources. If both `com.stano.java` and `com.stano.kotlin` are applied, the Kotlin plugin is applied transparently (idempotent, no duplication).
 
 ---
 
@@ -493,7 +523,7 @@ docker {
 **Auto-configuration when `com.stano.spring-boot` is also applied:**
 
 - `docker.name` → `{dockerRegistryHost}/{org}/{contextName}/{branch}:{version}`
-- `docker.files()` → outputs of `bootWar` task
+- `docker.files()` → outputs of `bootJar` task
 - Build args: `DOCKER_REGISTRY`, `PROJECT_VERSION`, `CONTEXT_NAME`, `BUILD_NUMBER`
 - Labels: `com.stano.build-hostname`, `com.stano.build-username`, `com.stano.repository-url`, `com.stano.branch`, `com.stano.build-number`, `com.stano.commit-hash`, `com.stano.commit-time`
 

@@ -25,7 +25,8 @@ public class ConfigureTasks implements PluginFeature {
   @Override
   public void apply(Project project) {
     final var dockerRegistrySettings = new DockerRegistrySettings(project);
-    final var baseExtension = project.getExtensions().getByType(BaseExtension.class);
+    final var baseExtension =
+        project.getRootProject().getExtensions().getByType(BaseExtension.class);
     DockerRemoveImagesExtension dockerRemoveImagesExtension =
         project.getExtensions().create("dockerRemoveImages", DockerRemoveImagesExtension.class);
     configureDockerDefaults(project, dockerRegistrySettings, baseExtension);
@@ -33,7 +34,7 @@ public class ConfigureTasks implements PluginFeature {
         p -> {
           DockerExtension dockerExtension = p.getExtensions().getByType(DockerExtension.class);
           Supplier<String> nameSupplier = dockerExtension.getNameSupplier();
-          Task loginTask = createDockerLoginTask(p, dockerRegistrySettings);
+          Task loginTask = createDockerLoginTask(p, dockerRegistrySettings, baseExtension);
           Task logoutTask = createDockerLogoutTask(p, dockerRegistrySettings);
           Task cleanupImageTask = createDockerCleanupImageTask(p, nameSupplier);
           Collection<String> dockerRemoveImages =
@@ -53,63 +54,51 @@ public class ConfigureTasks implements PluginFeature {
   }
 
   private Task createDockerLoginTask(
-      Project project, DockerRegistrySettings dockerRegistrySettings) {
-    String registryHost = dockerRegistrySettings.getHost();
-    if (registryHost.endsWith(".amazonaws.com")) {
-      // 322095465246.dkr.ecr.us-east-2.amazonaws.com
-      // aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS
-      // --password-stdin $ECR_HOST
-      String awsRegion =
-          registryHost.replaceAll(".*\\.dkr\\.ecr\\.", "").replace(".amazonaws.com", "");
-      String awsDockerLogin =
-          String.format(
-              "aws ecr get-login-password --region %s | docker login --username AWS"
-                  + " --password-stdin %s",
-              awsRegion, registryHost);
-      return project
-          .getTasks()
-          .register(
-              "dockerLogin",
-              Exec.class,
-              exec -> {
-                exec.commandLine("bash", "-c", awsDockerLogin);
-                exec.setGroup("Docker");
-                exec.setDescription("Logs in to docker");
-              })
-          .get();
-    }
+      Project project, DockerRegistrySettings dockerRegistrySettings, BaseExtension baseExtension) {
     return project
         .getTasks()
         .register(
             "dockerLogin",
             Exec.class,
             exec -> {
-              exec.commandLine(
-                  "docker",
-                  "login",
-                  "-u",
-                  dockerRegistrySettings.getUsername(),
-                  "-p",
-                  dockerRegistrySettings.getPassword(),
-                  registryHost);
               exec.setGroup("Docker");
               exec.setDescription("Logs in to docker");
+              exec.doFirst(
+                  task -> {
+                    String registryHost = dockerRegistrySettings.getHost();
+                    if (AwsEcrLoginCommandBuilder.isEcrRegistry(registryHost)) {
+                      exec.commandLine(
+                          AwsEcrLoginCommandBuilder.buildLoginCommand(
+                              registryHost, baseExtension.getDockerRegistryAwsProfile()));
+                    } else {
+                      exec.commandLine(
+                          DockerExecutable.resolve(),
+                          "login",
+                          "-u",
+                          dockerRegistrySettings.getUsername(),
+                          "-p",
+                          dockerRegistrySettings.getPassword(),
+                          registryHost);
+                    }
+                  });
             })
         .get();
   }
 
   private Task createDockerLogoutTask(
       Project project, DockerRegistrySettings dockerRegistrySettings) {
-    String registryHost = dockerRegistrySettings.getHost();
     return project
         .getTasks()
         .register(
             "dockerLogout",
             Exec.class,
             exec -> {
-              exec.commandLine("docker", "logout", registryHost);
               exec.setGroup("Docker");
               exec.setDescription("Logs out of docker");
+              exec.doFirst(
+                  task ->
+                      exec.commandLine(
+                          DockerExecutable.resolve(), "logout", dockerRegistrySettings.getHost()));
             })
         .get();
   }
@@ -127,7 +116,12 @@ public class ConfigureTasks implements PluginFeature {
                   task -> {
                     List<String> args =
                         new ArrayList<>(
-                            Arrays.asList("docker", "image", "rm", "--force", nameSupplier.get()));
+                            Arrays.asList(
+                                DockerExecutable.resolve(),
+                                "image",
+                                "rm",
+                                "--force",
+                                nameSupplier.get()));
                     exec.commandLine(args.toArray());
                   });
             })
@@ -146,7 +140,8 @@ public class ConfigureTasks implements PluginFeature {
               Collection<String> images = extension.getImages().getOrElse(Collections.emptyList());
               boolean force = extension.getForce().getOrElse(false);
               boolean noPrune = extension.getNoPrune().getOrElse(false);
-              List<String> args = new ArrayList<>(Arrays.asList("docker", "image", "rm"));
+              List<String> args =
+                  new ArrayList<>(Arrays.asList(DockerExecutable.resolve(), "image", "rm"));
               if (force) {
                 args.add("--force");
               }
@@ -173,16 +168,29 @@ public class ConfigureTasks implements PluginFeature {
       String registryHost = dockerRegistrySettings.getHost();
       String projectVersion = String.valueOf(project.getVersion());
       dockerExtension.setDefaultNameSupplier(
-          () ->
-              String.format(
-                  "%s/%s/%s/%s:%s",
-                  registryHost,
-                  new RepositoryOrganizationProvider(gitRootDir).toString(),
-                  contextName.toLowerCase(),
-                  new BranchNameProvider(gitRootDir).toString().toLowerCase(),
-                  projectVersion));
-      Task dockerDependencyTask = project.getTasks().getByName("bootWar");
-      dockerExtension.files(dockerDependencyTask.getOutputs());
+          () -> {
+            boolean isLocalBuild = registryHost == null || registryHost.isEmpty();
+            String prefix =
+                isLocalBuild
+                    ? ""
+                    : registryHost + "/" + new RepositoryOrganizationProvider(gitRootDir) + "/";
+            return String.format(
+                "%s%s/%s:%s",
+                prefix,
+                contextName.toLowerCase(),
+                new BranchNameProvider(gitRootDir).toString().toLowerCase(),
+                projectVersion);
+          });
+      Task dockerDependencyTask = project.getTasks().getByName("bootJar");
+      dockerExtension.files(project.files(dockerDependencyTask.getOutputs()));
+      Task copyOtelJavaagentTask = project.getTasks().findByName("copyOtelJavaagent");
+      if (copyOtelJavaagentTask != null) {
+        dockerExtension
+            .getCopySpec()
+            .from(
+                copyOtelJavaagentTask,
+                spec -> spec.into("otel").include("opentelemetry-javaagent*.jar"));
+      }
       dockerExtension.buildArgs(
           getStandardBuildArgs(project, contextName, dockerRegistrySettings, baseExtension));
     }
@@ -223,7 +231,9 @@ public class ConfigureTasks implements PluginFeature {
       DockerRegistrySettings dockerRegistrySettings,
       BaseExtension baseExtension) {
     Map<String, String> buildArgs = new HashMap<>();
-    buildArgs.put("DOCKER_REGISTRY", dockerRegistrySettings.getHost());
+    if (dockerRegistrySettings.getHost() != null) {
+      buildArgs.put("DOCKER_REGISTRY", dockerRegistrySettings.getHost());
+    }
     buildArgs.put("PROJECT_VERSION", project.getVersion().toString());
     buildArgs.put("CONTEXT_NAME", contextName);
     if (baseExtension.getBuildNumber() != null) {

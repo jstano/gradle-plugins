@@ -122,7 +122,7 @@ public class BaseExtensionFeature implements PluginFeature {
   }
 
   private static String getContextName(Project project) {
-    return getProjectProperty(project, CONTEXT_NAME);
+    return getProjectProperty(project, CONTEXT_NAME, project.getRootProject().getName());
   }
 
   private String getBuildNumber(Project project) {

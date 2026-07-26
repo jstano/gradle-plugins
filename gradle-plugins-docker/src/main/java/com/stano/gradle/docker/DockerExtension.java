@@ -39,6 +39,7 @@ public class DockerExtension {
   private boolean buildx = true;
   private Set<String> platform = ImmutableSet.of();
   private boolean load = false;
+  private boolean loadExplicitlySet = false;
   private boolean push = false;
   private String builder;
   private File resolvedDockerfile;
@@ -212,11 +213,12 @@ public class DockerExtension {
   }
 
   public boolean getLoad() {
-    return load;
+    return loadExplicitlySet ? load : !push;
   }
 
   public void load(boolean load) {
     this.load = load;
+    this.loadExplicitlySet = true;
   }
 
   public boolean getPush() {

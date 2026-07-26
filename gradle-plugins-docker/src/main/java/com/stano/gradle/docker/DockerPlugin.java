@@ -142,7 +142,7 @@ public class DockerPlugin implements Plugin<Project> {
           File buildDirFile = p.getLayout().getBuildDirectory().get().getAsFile();
           String dockerDir = buildDirFile + "/docker";
           clean.delete(dockerDir);
-          prepare.from(ext.getCopySpec());
+          prepare.with(ext.getCopySpec());
           prepare.from(
               ext.getResolvedDockerfile(),
               spec -> {
@@ -228,7 +228,7 @@ public class DockerPlugin implements Plugin<Project> {
                           task.doFirst(
                               t ->
                                   task.commandLine(
-                                      "docker",
+                                      DockerExecutable.resolve(),
                                       "tag",
                                       nameSupplier.get(),
                                       tagConfig.tagTask.get()));
@@ -248,7 +248,9 @@ public class DockerPlugin implements Plugin<Project> {
                           task.setWorkingDir(dockerDir);
                           task.dependsOn(tagSubTask);
                           task.doFirst(
-                              t -> task.commandLine("docker", "push", tagConfig.tagTask.get()));
+                              t ->
+                                  task.commandLine(
+                                      DockerExecutable.resolve(), "push", tagConfig.tagTask.get()));
                         });
             pushAllTags.dependsOn(pushSubTask);
           }
@@ -269,7 +271,7 @@ public class DockerPlugin implements Plugin<Project> {
       String resolvedName,
       Map<String, String> resolvedLabels) {
     List<String> buildCommandLine = new ArrayList<>();
-    buildCommandLine.add("docker");
+    buildCommandLine.add(DockerExecutable.resolve());
     if (buildx) {
       buildCommandLine.addAll(List.of("buildx", "build"));
       Set<String> effectivePlatform =

@@ -47,8 +47,9 @@ Each `gradle-plugins-*` submodule is an independently published Gradle plugin. T
 | `com.stano.base` | `ProjectPlugin` | `gradle-plugins-base` | Root-project prerequisite. Registers `BaseExtension`, adds `jacocoRootReport`. **Must be applied to the root project before any other stano plugin.** |
 | `com.stano.application` | `ApplicationPlugin` | `gradle-plugins-application` | Extends `com.stano.base`. Sets `project.version` from `ProjectVersionProvider`, applies `base` and `jacoco` to the root project. |
 | `com.stano.library` | `LibraryPlugin` | `gradle-plugins-library` | Extends `com.stano.base`. Applies `base` and `jacoco` to the root project. For multi-module **library** builds (as opposed to applications). |
-| `com.stano.java` | `JavaPlugin` | `gradle-plugins-java` | Core plugin for internal Java/Kotlin modules. Applies java-library, Kotlin JVM, JaCoCo, Spotless (Eclipse formatter). Validates that `com.stano.base` is already on the root. |
+| `com.stano.java` | `JavaPlugin` | `gradle-plugins-java` | Core plugin for internal Java modules. Applies java-library, JaCoCo, Spotless (Eclipse formatter). Validates that `com.stano.base` is already on the root. |
 | `com.stano.java-library` | `JavaLibraryPlugin` | `gradle-plugins-java-library` | Extends `com.stano.java`. Adds `javadoc` + sources JARs and Maven publishing. |
+| `com.stano.kotlin` | `KotlinPlugin` | `gradle-plugins-kotlin` | Opt-in Kotlin JVM support for Java subprojects. Applies `org.jetbrains.kotlin.jvm`, configures `KotlinCompile` tasks. Requires `com.stano.java` to be applied to the subproject. |
 | `com.stano.spring-boot` | `SpringBootPlugin` | `gradle-plugins-spring-boot` | Applies `org.springframework.boot`, pins Spring Boot + MSP BOM, names the boot JAR after the root project, registers a `copyOtelJavaagent` task. |
 | `com.stano.sonar` | `SonarPlugin` | `gradle-plugins-sonar` | SonarQube integration. Silently skips (with a warning) when host/token are unconfigured. |
 | `com.stano.settings` | `SettingsPlugin` | `gradle-plugins-settings` | Settings-level plugin. Configures dependency resolution management, S3 build cache, and pins Kotlin JVM plugin version. |
@@ -100,6 +101,7 @@ Root package: `com.stano.gradle`. Subpackages match the submodule's functional d
 | `com.stano.gradle.docker` | `gradle-plugins-docker` |
 | `com.stano.gradle.javalibrary` | `gradle-plugins-java-library` |
 | `com.stano.gradle.java` | `gradle-plugins-java` |
+| `com.stano.gradle.kotlin` | `gradle-plugins-kotlin` |
 | `com.stano.gradle.library` | `gradle-plugins-library` |
 | `com.stano.gradle.plugin.test` | `gradle-plugins-test` (deprecated; use testFixtures from gradle-plugins-base) |
 | `com.stano.gradle.settings` | `gradle-plugins-settings` |

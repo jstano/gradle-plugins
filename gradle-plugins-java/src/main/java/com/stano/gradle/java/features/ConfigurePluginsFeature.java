@@ -12,7 +12,6 @@ public class ConfigurePluginsFeature implements PluginFeature {
   public void apply(Project project) {
     PluginContainer plugins = project.getPlugins();
     plugins.apply(JavaLibraryPlugin.class);
-    plugins.apply("org.jetbrains.kotlin.jvm");
     plugins.apply(JacocoLogPlugin.class);
     plugins.apply(JacocoPlugin.class);
   }

@@ -41,6 +41,5 @@ public class ConfigureCompilersFeature implements PluginFeature {
                   .set(JavaLanguageVersion.of(projectJavaVersion.getMajorVersion()));
             });
     new CompilerUtils().configureJavaCompiler(project);
-    new CompilerUtils().configureKotlinCompiler(project);
   }
 }
