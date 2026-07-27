@@ -5,12 +5,16 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.stano.gradle.base.BasePluginTest;
+import com.stano.gradle.mavencentralpublish.features.ConfigureMavenCentralPomFeature;
 import com.stano.gradle.mavencentralpublish.features.ConfigureMavenCentralStagingZipFeature;
 import com.stano.gradle.mavencentralpublish.features.ConfigureMavenCentralUploadTaskFeature;
+import java.util.Set;
+import org.gradle.api.Task;
 import org.gradle.api.internal.project.ProjectInternal;
 import org.gradle.api.publish.PublishingExtension;
 import org.gradle.api.publish.maven.MavenPublication;
 import org.gradle.api.publish.maven.plugins.MavenPublishPlugin;
+import org.gradle.api.publish.maven.tasks.PublishToMavenRepository;
 import org.gradle.plugins.signing.SigningPlugin;
 import org.junit.jupiter.api.Test;
 
@@ -76,6 +80,74 @@ class MavenCentralPublishPluginTest extends BasePluginTest {
     Exception exception =
         assertThrows(Exception.class, () -> ((ProjectInternal) childProject).evaluate());
     assertTrue(containsMessage(exception, "mavenCentralPublish.componentName must be set"));
+  }
+
+  @Test
+  void zipStagingDeployTaskShouldDependOnThePublishToStagingRepositoryTask() {
+    childProject.getPluginManager().apply("java-library");
+    childProject.getPluginManager().apply("com.stano.maven-central-publish");
+    configureExtension(childProject.getExtensions().getByType(MavenCentralPublishExtension.class));
+
+    ((ProjectInternal) childProject).evaluate();
+
+    Task zipTask =
+        childProject.getTasks().getByName(ConfigureMavenCentralStagingZipFeature.TASK_NAME);
+    Set<? extends Task> dependencies = zipTask.getTaskDependencies().getDependencies(zipTask);
+
+    assertTrue(
+        dependencies.stream()
+            .filter(PublishToMavenRepository.class::isInstance)
+            .map(PublishToMavenRepository.class::cast)
+            .anyMatch(
+                t ->
+                    ConfigureMavenCentralPomFeature.STAGING_REPOSITORY_NAME.equals(
+                        t.getRepository().getName())));
+  }
+
+  @Test
+  void zipStagingDeployTaskShouldNotDependOnOtherPublicationsPublishedToTheStagingRepository() {
+    childProject.getPluginManager().apply("java-library");
+    childProject.getPluginManager().apply("com.stano.maven-central-publish");
+    configureExtension(childProject.getExtensions().getByType(MavenCentralPublishExtension.class));
+
+    PublishingExtension publishingExtension =
+        childProject.getExtensions().getByType(PublishingExtension.class);
+    publishingExtension.publications(
+        publications ->
+            publications.create(
+                "otherPublication",
+                MavenPublication.class,
+                publication -> publication.from(childProject.getComponents().getByName("java"))));
+
+    ((ProjectInternal) childProject).evaluate();
+
+    Task zipTask =
+        childProject.getTasks().getByName(ConfigureMavenCentralStagingZipFeature.TASK_NAME);
+    Set<? extends Task> dependencies = zipTask.getTaskDependencies().getDependencies(zipTask);
+
+    assertTrue(
+        dependencies.stream()
+            .filter(PublishToMavenRepository.class::isInstance)
+            .map(PublishToMavenRepository.class::cast)
+            .noneMatch(
+                t ->
+                    ConfigureMavenCentralPomFeature.STAGING_REPOSITORY_NAME.equals(
+                            t.getRepository().getName())
+                        && "otherPublication".equals(t.getPublication().getName())));
+  }
+
+  @Test
+  void settingABlankRequiredExtensionValueShouldFailWithAClearMessage() {
+    childProject.getPluginManager().apply("java-library");
+    childProject.getPluginManager().apply("com.stano.maven-central-publish");
+    MavenCentralPublishExtension extension =
+        childProject.getExtensions().getByType(MavenCentralPublishExtension.class);
+    configureExtension(extension);
+    extension.setPomUrl(""); // blank, not null
+
+    Exception exception =
+        assertThrows(Exception.class, () -> ((ProjectInternal) childProject).evaluate());
+    assertTrue(containsMessage(exception, "mavenCentralPublish.pomUrl must be set"));
   }
 
   private boolean containsMessage(Throwable throwable, String expectedMessage) {

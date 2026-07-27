@@ -2,6 +2,7 @@ package com.stano.gradle.mavencentralpublish.features;
 
 import com.stano.gradle.base.PluginFeature;
 import org.gradle.api.Project;
+import org.gradle.api.publish.maven.tasks.PublishToMavenRepository;
 import org.gradle.api.tasks.bundling.Zip;
 
 public class ConfigureMavenCentralStagingZipFeature implements PluginFeature {
@@ -21,6 +22,16 @@ public class ConfigureMavenCentralStagingZipFeature implements PluginFeature {
               zip.from(
                   project.getLayout().getBuildDirectory().dir("staging-deploy"),
                   copySpec -> copySpec.include("**/*"));
+              zip.dependsOn(
+                  project
+                      .getTasks()
+                      .withType(PublishToMavenRepository.class)
+                      .matching(
+                          t ->
+                              ConfigureMavenCentralPomFeature.STAGING_REPOSITORY_NAME.equals(
+                                      t.getRepository().getName())
+                                  && ConfigureMavenCentralPomFeature.PUBLICATION_NAME.equals(
+                                      t.getPublication().getName())));
             });
   }
 }

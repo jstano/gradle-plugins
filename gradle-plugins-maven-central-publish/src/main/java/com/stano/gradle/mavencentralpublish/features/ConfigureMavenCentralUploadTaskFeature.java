@@ -4,6 +4,7 @@ import com.stano.gradle.base.PluginFeature;
 import com.stano.gradle.mavencentralpublish.MavenCentralPublishExtension;
 import com.stano.gradle.mavencentralpublish.tasks.PublishToMavenCentralTask;
 import org.gradle.api.Project;
+import org.gradle.api.tasks.bundling.Zip;
 
 public class ConfigureMavenCentralUploadTaskFeature implements PluginFeature {
   public static final String TASK_NAME = "publishToMavenCentral";
@@ -18,9 +19,11 @@ public class ConfigureMavenCentralUploadTaskFeature implements PluginFeature {
             PublishToMavenCentralTask.class,
             task -> {
               task.setGroup("publishing");
-              task.dependsOn(ConfigureMavenCentralStagingZipFeature.TASK_NAME);
-              task.getStagingZip()
-                  .set(project.getLayout().getBuildDirectory().file("tmp/staging-deploy.zip"));
+              var zipTask =
+                  project
+                      .getTasks()
+                      .named(ConfigureMavenCentralStagingZipFeature.TASK_NAME, Zip.class);
+              task.getStagingZip().set(zipTask.flatMap(Zip::getArchiveFile));
               task.getUploadName()
                   .set(
                       project.provider(

@@ -4,12 +4,14 @@ import com.stano.gradle.base.PluginFeature;
 import com.stano.gradle.mavencentralpublish.MavenCentralPublishExtension;
 import org.gradle.api.GradleException;
 import org.gradle.api.Project;
+import org.gradle.api.attributes.Usage;
 import org.gradle.api.publish.PublishingExtension;
 import org.gradle.api.publish.maven.MavenPublication;
 import org.gradle.api.publish.maven.plugins.MavenPublishPlugin;
 
 public class ConfigureMavenCentralPomFeature implements PluginFeature {
   public static final String PUBLICATION_NAME = "mavenJava";
+  public static final String STAGING_REPOSITORY_NAME = "stagingDeploy";
 
   @Override
   public void apply(Project project) {
@@ -63,20 +65,28 @@ public class ConfigureMavenCentralPomFeature implements PluginFeature {
                               scm.getUrl().set(extension.getScmUrl());
                             });
                       });
+                  publication.versionMapping(
+                      mapping -> {
+                        mapping.usage(Usage.JAVA_API, strategy -> strategy.fromResolutionResult());
+                        mapping.usage(
+                            Usage.JAVA_RUNTIME, strategy -> strategy.fromResolutionResult());
+                      });
                 }));
 
     publishingExtension.repositories(
         repositories ->
             repositories.maven(
-                repository ->
-                    repository.setUrl(
-                        project
-                            .getLayout()
-                            .getBuildDirectory()
-                            .dir("staging-deploy")
-                            .get()
-                            .getAsFile()
-                            .toURI())));
+                repository -> {
+                  repository.setName(STAGING_REPOSITORY_NAME);
+                  repository.setUrl(
+                      project
+                          .getLayout()
+                          .getBuildDirectory()
+                          .dir("staging-deploy")
+                          .get()
+                          .getAsFile()
+                          .toURI());
+                }));
   }
 
   private void validate(Project project, MavenCentralPublishExtension extension) {
@@ -95,7 +105,7 @@ public class ConfigureMavenCentralPomFeature implements PluginFeature {
   }
 
   private void requireNonNull(Project project, String value, String fieldName) {
-    if (value == null) {
+    if (value == null || value.isBlank()) {
       throw new GradleException(
           String.format(
               "mavenCentralPublish.%s must be set on project '%s' (applied by"

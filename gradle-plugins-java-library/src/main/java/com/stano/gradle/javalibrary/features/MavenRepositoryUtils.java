@@ -19,11 +19,7 @@ public class MavenRepositoryUtils {
 
   public static void configureStanoMavenRepository(
       Project project, MavenArtifactRepository repository) {
-    var properties = project.getExtensions().getExtraProperties().getProperties();
-    var stanoMavenUrl =
-        properties.containsKey(STANO_MAVEN_URL_PROPERTY)
-            ? properties.get(STANO_MAVEN_URL_PROPERTY).toString()
-            : System.getenv(STANO_MAVEN_URL_ENVIRONMENT);
+    var stanoMavenUrl = resolveStanoMavenUrl(project);
     if (stanoMavenUrl == null) {
       return;
     }
@@ -33,6 +29,9 @@ public class MavenRepositoryUtils {
   }
 
   public static void configurePublishing(Project project) {
+    if (resolveStanoMavenUrl(project) == null) {
+      return;
+    }
     configurePublishingRepositories(project);
     PublishingExtension publishingExtension =
         project.getExtensions().findByType(PublishingExtension.class);
@@ -50,12 +49,7 @@ public class MavenRepositoryUtils {
   }
 
   public static void configurePublishingRepositories(Project project) {
-    var properties = project.getExtensions().getExtraProperties().getProperties();
-    var stanoMavenUrl =
-        properties.containsKey(STANO_MAVEN_URL_PROPERTY)
-            ? properties.get(STANO_MAVEN_URL_PROPERTY).toString()
-            : System.getenv(STANO_MAVEN_URL_ENVIRONMENT);
-    if (stanoMavenUrl == null) {
+    if (resolveStanoMavenUrl(project) == null) {
       return;
     }
     PublishingExtension publishingExtension =
@@ -66,6 +60,13 @@ public class MavenRepositoryUtils {
                 repository -> {
                   configureStanoMavenRepository(project, repository);
                 }));
+  }
+
+  private static String resolveStanoMavenUrl(Project project) {
+    var properties = project.getExtensions().getExtraProperties().getProperties();
+    return properties.containsKey(STANO_MAVEN_URL_PROPERTY)
+        ? properties.get(STANO_MAVEN_URL_PROPERTY).toString()
+        : System.getenv(STANO_MAVEN_URL_ENVIRONMENT);
   }
 
   public static void disableEnforcedPlatformError(Project project) {
