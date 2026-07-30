@@ -16,6 +16,7 @@ public class BaseExtension {
   private String mspVersion;
   private String javaVersion;
   private boolean useNvm;
+  private Boolean dependencyLocking;
   private String defaultNodeVersion;
   private String contextName;
   private String buildNumber;
@@ -112,6 +113,14 @@ public class BaseExtension {
 
   public void setUseNvm(boolean useNvm) {
     this.useNvm = useNvm;
+  }
+
+  public Boolean getDependencyLocking() {
+    return dependencyLocking;
+  }
+
+  public void setDependencyLocking(Boolean dependencyLocking) {
+    this.dependencyLocking = dependencyLocking;
   }
 
   public String getDefaultNodeVersion() {

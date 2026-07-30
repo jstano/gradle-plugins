@@ -2,6 +2,7 @@ package com.stano.gradle.base;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.stano.gradle.base.features.BaseExtensionFeature;
 import org.gradle.api.Project;
@@ -35,5 +36,26 @@ class BaseExtensionFeatureTest {
 
     BaseExtension baseExtension = project.getExtensions().getByType(BaseExtension.class);
     assertEquals("21", baseExtension.getJavaVersion());
+  }
+
+  @Test
+  void dependencyLockingShouldDefaultToNullWhenNotExplicitlySet() {
+    Project project = ProjectBuilder.builder().build();
+
+    new BaseExtensionFeature().apply(project);
+
+    BaseExtension baseExtension = project.getExtensions().getByType(BaseExtension.class);
+    assertNull(baseExtension.getDependencyLocking());
+  }
+
+  @Test
+  void settingDependencyLockingProjectPropertyShouldOverrideTheDefault() {
+    Project project = ProjectBuilder.builder().build();
+    project.getExtensions().getExtraProperties().set("com.stano.dependency-locking", "false");
+
+    new BaseExtensionFeature().apply(project);
+
+    BaseExtension baseExtension = project.getExtensions().getByType(BaseExtension.class);
+    assertEquals(false, baseExtension.getDependencyLocking());
   }
 }

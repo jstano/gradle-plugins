@@ -4,6 +4,7 @@ import com.stano.gradle.base.BasePlugin;
 import com.stano.gradle.java.features.ConfigureArtifactsFeature;
 import com.stano.gradle.java.features.ConfigureCompilersFeature;
 import com.stano.gradle.java.features.ConfigureDefaultDependenciesFeature;
+import com.stano.gradle.java.features.ConfigureDependencyLockingFeature;
 import com.stano.gradle.java.features.ConfigureJacocoFeature;
 import com.stano.gradle.java.features.ConfigurePluginsFeature;
 import com.stano.gradle.java.features.ConfigureSpotlessFeature;
@@ -32,5 +33,6 @@ public class JavaPlugin implements Plugin<Project> {
     new ConfigureTestPluginFeature().apply(project);
     new ConfigureJacocoFeature().apply(project);
     new ConfigureArtifactsFeature().apply(project);
+    new ConfigureDependencyLockingFeature().apply(project);
   }
 }

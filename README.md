@@ -182,6 +182,7 @@ extensions.getByType<BaseExtension>().apply {
 | `dockerRegistryUsername` | `String` | `null` | `dockerRegistryUsername` prop / env | Docker registry credentials |
 | `dockerRegistryPassword` | `String` | `null` | `dockerRegistryPassword` prop / env | Docker registry credentials |
 | `dockerRegistryAwsProfile` | `String` | `null` | `dockerRegistryAwsProfile` prop / env | AWS profile for ECR login |
+| `dependencyLocking` | `Boolean` | `null` (unset) | `com.stano.dependency-locking` prop / env | Enables dependency locking in `com.stano.java` subprojects. `null` means "no explicit override" — `com.stano.application`/`com.stano.library` set their own default if unset; an explicit value here always wins |
 | `branchNameProvider` | `Provider<String>` | auto-computed | Git/CI env | Current branch name |
 | `commitHashProvider` | `Provider<String>` | auto-computed | Git HEAD | Abbreviated commit hash |
 | `commitTimeProvider` | `Provider<String>` | auto-computed | Git HEAD | Commit timestamp |
@@ -200,7 +201,7 @@ extensions.getByType<BaseExtension>().apply {
 
 **Applied to:** Root project only
 **Extends:** `com.stano.base`
-**Description:** Everything `com.stano.base` does, plus automatically sets `project.version` for all subprojects based on git metadata (commit timestamp + hash, optionally with CI build number).
+**Description:** Everything `com.stano.base` does, plus automatically sets `project.version` for all subprojects based on git metadata (commit timestamp + hash, optionally with CI build number). Also defaults `dependencyLocking` to `true` (if not explicitly overridden), since applications benefit most from a fully reproducible, locked dependency graph.
 
 **Minimal example:**
 
@@ -222,7 +223,7 @@ The version is computed as:
 
 **Applied to:** Root project only
 **Extends:** `com.stano.base`
-**Description:** Like `com.stano.application` but does NOT set `project.version`. Use for multi-module library builds where version is managed elsewhere (e.g., in `gradle.properties` or a parent POM).
+**Description:** Like `com.stano.application` but does NOT set `project.version`. Use for multi-module library builds where version is managed elsewhere (e.g., in `gradle.properties` or a parent POM). Defaults `dependencyLocking` to `false` (if not explicitly overridden), since libraries are consumed by other projects and often want resolution flexibility.
 
 **Minimal example:**
 
@@ -272,6 +273,7 @@ dependencies {
   - Adds `org.jetbrains:annotations` as `compileOnly`
   - Adds `com.stano:msp-test-starter` as `testImplementation`
 - Automatic mapstruct processor: if `org.mapstruct:mapstruct` is detected in any dependency configuration, `org.mapstruct:mapstruct-processor` is auto-added to `annotationProcessor`
+- Dependency locking (STRICT mode, via `lockAllConfigurations()`) when `BaseExtension.dependencyLocking` resolves to `true` — defaulted by `com.stano.application` (on) or `com.stano.library` (off); override explicitly with the `com.stano.dependency-locking` project/system property (`-Pcom.stano.dependency-locking=false`). Run `./gradlew dependencies --write-locks` to generate/update `gradle.lockfile`s
 
 **Tasks registered:**
 

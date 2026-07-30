@@ -11,6 +11,7 @@ public class ApplicationPlugin extends BasePlugin {
     project.getPluginManager().apply("base");
     project.getPluginManager().apply("jacoco");
     setVersion(project);
+    setDependencyLockingDefault(project);
   }
 
   private void setVersion(Project project) {
@@ -22,5 +23,12 @@ public class ApplicationPlugin extends BasePlugin {
             subProject -> {
               subProject.setVersion(project.getVersion());
             });
+  }
+
+  private void setDependencyLockingDefault(Project project) {
+    BaseExtension baseExtension = project.getExtensions().getByType(BaseExtension.class);
+    if (baseExtension.getDependencyLocking() == null) {
+      baseExtension.setDependencyLocking(true);
+    }
   }
 }

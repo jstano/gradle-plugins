@@ -41,6 +41,7 @@ public class BaseExtensionFeature implements PluginFeature {
   private static final String DEFAULT_NODE_VERSION = "com.stano.default-node-version";
   private static final String USE_NVM = "com.stano.use-nvm";
   private static final String CONTEXT_NAME = "contextName";
+  private static final String DEPENDENCY_LOCKING = "com.stano.dependency-locking";
   private static final String DEFAULT_JAVA_VERSION = "21";
 
   @Override
@@ -62,6 +63,7 @@ public class BaseExtensionFeature implements PluginFeature {
     //      baseExtension.setUseNvm(getUseNvm(project));
     //      baseExtension.setDefaultNodeVersion(getDefaultNodeVersion(project));
     baseExtension.setContextName(getContextName(project));
+    baseExtension.setDependencyLocking(getDependencyLocking(project));
     baseExtension.setBuildNumber(getBuildNumber(project));
     baseExtension.setBuildTime(LocalDateTime.now(ZoneId.of("America/Chicago")));
     baseExtension.setRepositoryUrlProvider(new RepositoryUrlProvider(project.getRootDir()));
@@ -128,6 +130,11 @@ public class BaseExtensionFeature implements PluginFeature {
 
   private static String getContextName(Project project) {
     return getProjectProperty(project, CONTEXT_NAME, project.getRootProject().getName());
+  }
+
+  private static Boolean getDependencyLocking(Project project) {
+    String raw = getProjectOrSystemProperty(project, DEPENDENCY_LOCKING, null);
+    return raw == null ? null : Boolean.parseBoolean(raw);
   }
 
   private String getBuildNumber(Project project) {
