@@ -1,5 +1,6 @@
 package com.stano.gradle.base.features;
 
+import java.util.List;
 import java.util.concurrent.Callable;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
@@ -19,38 +20,9 @@ public class JacocoAggregateFeature {
             task -> {
               ConfigurableFileCollection sourceFiles = project.files();
               ConfigurableFileCollection classFiles = project.files();
-              project
-                  .getSubprojects()
-                  .forEach(
-                      sp -> {
-                        Task testTask = sp.getTasks().findByName("test");
-                        if (testTask != null) {
-                          task.dependsOn(testTask);
-                          Task jacocoTestReport = sp.getTasks().findByName("jacocoTestReport");
-                          boolean jacocoEnabled =
-                              jacocoTestReport != null && jacocoTestReport.getEnabled();
-                          if (jacocoEnabled) {
-                            task.dependsOn(jacocoTestReport);
-                          }
-                          Task spotlessJava = sp.getTasks().findByName("spotlessJava");
-                          if (spotlessJava != null) {
-                            task.dependsOn(spotlessJava);
-                          }
-                          Task copyOtelJavaagent = sp.getTasks().findByName("copyOtelJavaagent");
-                          if (copyOtelJavaagent != null) {
-                            task.dependsOn(copyOtelJavaagent);
-                          }
-                          SourceSetContainer sourceSets =
-                              sp.getExtensions().findByType(SourceSetContainer.class);
-                          if (sourceSets != null) {
-                            SourceSet main = sourceSets.findByName("main");
-                            if (main != null && jacocoEnabled) {
-                              sourceFiles.from(main.getAllSource().getSrcDirs());
-                              classFiles.from(main.getOutput().getClassesDirs());
-                            }
-                          }
-                        }
-                      });
+              var targets =
+                  project.getSubprojects().isEmpty() ? List.of(project) : project.getSubprojects();
+              targets.forEach(target -> wireProject(target, task, sourceFiles, classFiles));
               var execFiles =
                   project.fileTree(project.getRootDir()).include("**/build/jacoco/*.exec");
               task.getExecutionData().setFrom(execFiles);
@@ -72,5 +44,37 @@ public class JacocoAggregateFeature {
               task.getReports().getXml().getRequired().set(true);
               task.getReports().getHtml().getRequired().set(true);
             });
+  }
+
+  private void wireProject(
+      Project target,
+      JacocoReport task,
+      ConfigurableFileCollection sourceFiles,
+      ConfigurableFileCollection classFiles) {
+    Task testTask = target.getTasks().findByName("test");
+    if (testTask != null) {
+      task.dependsOn(testTask);
+      Task jacocoTestReport = target.getTasks().findByName("jacocoTestReport");
+      boolean jacocoEnabled = jacocoTestReport != null && jacocoTestReport.getEnabled();
+      if (jacocoEnabled) {
+        task.dependsOn(jacocoTestReport);
+      }
+      Task spotlessJava = target.getTasks().findByName("spotlessJava");
+      if (spotlessJava != null) {
+        task.dependsOn(spotlessJava);
+      }
+      Task copyOtelJavaagent = target.getTasks().findByName("copyOtelJavaagent");
+      if (copyOtelJavaagent != null) {
+        task.dependsOn(copyOtelJavaagent);
+      }
+      SourceSetContainer sourceSets = target.getExtensions().findByType(SourceSetContainer.class);
+      if (sourceSets != null) {
+        SourceSet main = sourceSets.findByName("main");
+        if (main != null && jacocoEnabled) {
+          sourceFiles.from(main.getAllSource().getSrcDirs());
+          classFiles.from(main.getOutput().getClassesDirs());
+        }
+      }
+    }
   }
 }

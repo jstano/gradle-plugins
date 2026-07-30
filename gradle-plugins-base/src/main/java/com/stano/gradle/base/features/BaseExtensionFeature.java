@@ -110,7 +110,12 @@ public class BaseExtensionFeature implements PluginFeature {
   }
 
   private static String getJavaVersion(Project project) {
-    return getProjectOrSystemProperty(project, JAVA_VERSION, DEFAULT_JAVA_VERSION);
+    return normalizeJavaVersion(
+        getProjectOrSystemProperty(project, JAVA_VERSION, DEFAULT_JAVA_VERSION));
+  }
+
+  private static String normalizeJavaVersion(String version) {
+    return version.replaceFirst("^[^0-9]+", "");
   }
 
   private static boolean getUseNvm(Project project) {
