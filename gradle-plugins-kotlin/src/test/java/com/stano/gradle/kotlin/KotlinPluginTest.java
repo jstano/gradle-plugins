@@ -14,6 +14,13 @@ class KotlinPluginTest extends BasePluginTest {
   }
 
   @Test
+  void applyingThePluginToAChildProjectShouldAnchorTheKotlinJvmPluginOnTheRootProject() {
+    rootProject.getPluginManager().apply("com.stano.base");
+    childProject.getPluginManager().apply("com.stano.kotlin");
+    assertTrue(rootProject.getPluginManager().hasPlugin("org.jetbrains.kotlin.jvm"));
+  }
+
+  @Test
   void applyingThePluginShouldTransparentlyApplyComStanoJava() {
     rootProject.getPluginManager().apply("com.stano.base");
     childProject.getPluginManager().apply("com.stano.kotlin");

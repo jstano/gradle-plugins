@@ -29,7 +29,6 @@ dependencies {
   api(libs.jgit)
   api(libs.snakeyaml)
   implementation(libs.spotless)
-  implementation(libs.kotlin.jvm.plugin)
 
   testFixturesApi(libs.bundles.junit)
   testFixturesApi(libs.mockito.core)

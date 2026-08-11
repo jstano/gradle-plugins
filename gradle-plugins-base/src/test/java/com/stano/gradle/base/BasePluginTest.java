@@ -20,11 +20,4 @@ class BasePluginTest {
     project.getPluginManager().apply("com.stano.base");
     assertNotNull(project.getPlugins().findPlugin(SpotlessPlugin.class));
   }
-
-  @Test
-  void shouldApplyKotlinToAnchorTheRootClassloader() {
-    var project = ProjectBuilder.builder().build();
-    project.getPluginManager().apply("com.stano.base");
-    assertNotNull(project.getPlugins().findPlugin("org.jetbrains.kotlin.jvm"));
-  }
 }
