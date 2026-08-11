@@ -28,6 +28,7 @@ import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.tasks.Copy;
 import org.gradle.api.tasks.Delete;
 import org.gradle.api.tasks.Exec;
+import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.bundling.Zip;
 
 public class DockerPlugin implements Plugin<Project> {
@@ -46,20 +47,20 @@ public class DockerPlugin implements Plugin<Project> {
     if (project.getConfigurations().findByName("docker") == null) {
       project.getConfigurations().create("docker");
     }
-    Delete clean =
+    TaskProvider<Delete> clean =
         project
             .getTasks()
-            .create(
+            .register(
                 "dockerClean",
                 Delete.class,
                 task -> {
                   task.setGroup("Docker");
                   task.setDescription("Cleans Docker build directory.");
                 });
-    Copy prepare =
+    TaskProvider<Copy> prepare =
         project
             .getTasks()
-            .create(
+            .register(
                 "dockerPrepare",
                 Copy.class,
                 task -> {
@@ -68,12 +69,12 @@ public class DockerPlugin implements Plugin<Project> {
                   task.dependsOn(clean);
                 });
     if (project.getTasks().findByName("copyWar") != null) {
-      prepare.dependsOn(project.getTasks().findByName("copyWar"));
+      prepare.configure(task -> task.dependsOn(project.getTasks().findByName("copyWar")));
     }
-    Exec exec =
+    TaskProvider<Exec> exec =
         project
             .getTasks()
-            .create(
+            .register(
                 "docker",
                 Exec.class,
                 task -> {
@@ -81,38 +82,38 @@ public class DockerPlugin implements Plugin<Project> {
                   task.setDescription("Builds Docker image.");
                   task.dependsOn(prepare);
                 });
-    Task tag =
+    TaskProvider<Task> tag =
         project
             .getTasks()
-            .create(
+            .register(
                 "dockerTag",
                 task -> {
                   task.setGroup("Docker");
                   task.setDescription("Applies all tags to the Docker image.");
                   task.dependsOn(exec);
                 });
-    Task pushAllTags =
+    TaskProvider<Task> pushAllTags =
         project
             .getTasks()
-            .create(
+            .register(
                 "dockerTagsPush",
                 task -> {
                   task.setGroup("Docker");
                   task.setDescription("Pushes all tagged Docker images to configured Docker Hub.");
                 });
-    Task copyDockerImageUrl =
+    TaskProvider<Task> copyDockerImageUrl =
         project
             .getTasks()
-            .create(
+            .register(
                 "dockerImageUrl",
                 task -> {
                   task.setGroup("Docker");
                   task.setDescription("Copies Docker image url to a file.");
                 });
-    copyDockerImageUrl.shouldRunAfter(pushAllTags);
+    copyDockerImageUrl.configure(task -> task.shouldRunAfter(pushAllTags));
     project
         .getTasks()
-        .create(
+        .register(
             "dockerPush",
             task -> {
               task.setGroup("Docker");
@@ -122,13 +123,14 @@ public class DockerPlugin implements Plugin<Project> {
     Zip dockerfileZip =
         project
             .getTasks()
-            .create(
+            .register(
                 "dockerfileZip",
                 Zip.class,
                 task -> {
                   task.setGroup("Docker");
                   task.setDescription("Bundles the configured Dockerfile in a zip file");
-                });
+                })
+            .get();
     PublishArtifact dockerArtifact =
         new ArchivePublishArtifact(
             DefaultTaskDependencyFactory.withNoAssociatedProject(), dockerfileZip);
@@ -141,18 +143,17 @@ public class DockerPlugin implements Plugin<Project> {
           ext.resolvePathsAndValidate();
           File buildDirFile = p.getLayout().getBuildDirectory().get().getAsFile();
           String dockerDir = buildDirFile + "/docker";
-          clean.delete(dockerDir);
-          prepare.with(ext.getCopySpec());
-          prepare.from(
-              ext.getResolvedDockerfile(),
-              spec -> {
-                spec.rename(fileName -> "Dockerfile");
+          clean.configure(task -> task.delete(dockerDir));
+          prepare.configure(
+              task -> {
+                task.with(ext.getCopySpec());
+                task.from(
+                    ext.getResolvedDockerfile(),
+                    spec -> {
+                      spec.rename(fileName -> "Dockerfile");
+                    });
+                task.into(dockerDir);
               });
-          prepare.into(dockerDir);
-          exec.setWorkingDir(dockerDir);
-          exec.dependsOn(ext.getDependencies());
-          exec.getLogging().captureStandardOutput(LogLevel.INFO);
-          exec.getLogging().captureStandardError(LogLevel.ERROR);
 
           boolean buildx = ext.getBuildx();
           Set<String> platform = ext.getPlatform();
@@ -166,33 +167,42 @@ public class DockerPlugin implements Plugin<Project> {
           java.util.function.Supplier<String> nameSupplier = ext.getNameSupplier();
           java.util.function.Supplier<Map<String, String>> labelsSupplier = ext.getLabelsSupplier();
 
-          exec.doFirst(
-              task ->
-                  exec.commandLine(
-                      buildCommandLine(
-                          buildx,
-                          platform,
-                          noCache,
-                          network,
-                          buildArgs,
-                          pull,
-                          load,
-                          push,
-                          builder,
-                          nameSupplier.get(),
-                          labelsSupplier.get())));
-
-          copyDockerImageUrl.doLast(
-              ignored -> {
-                String content = nameSupplier.get();
-                String fileName = buildDirFile + "/docker-image-url.txt";
-                try {
-                  Files.writeString(Path.of(fileName), content);
-                } catch (IOException e) {
-                  throw new GradleException("Failed to write docker image URL file", e);
-                }
-                System.out.println("File created successfully: " + fileName);
+          exec.configure(
+              task -> {
+                task.setWorkingDir(dockerDir);
+                task.dependsOn(ext.getDependencies());
+                task.getLogging().captureStandardOutput(LogLevel.INFO);
+                task.getLogging().captureStandardError(LogLevel.ERROR);
+                task.doFirst(
+                    t ->
+                        task.commandLine(
+                            buildCommandLine(
+                                buildx,
+                                platform,
+                                noCache,
+                                network,
+                                buildArgs,
+                                pull,
+                                load,
+                                push,
+                                builder,
+                                nameSupplier.get(),
+                                labelsSupplier.get())));
               });
+
+          copyDockerImageUrl.configure(
+              task ->
+                  task.doLast(
+                      ignored -> {
+                        String content = nameSupplier.get();
+                        String fileName = buildDirFile + "/docker-image-url.txt";
+                        try {
+                          Files.writeString(Path.of(fileName), content);
+                        } catch (IOException e) {
+                          throw new GradleException("Failed to write docker image URL file", e);
+                        }
+                        System.out.println("File created successfully: " + fileName);
+                      }));
 
           Map<String, TagConfig> tags = new LinkedHashMap<>();
           for (Map.Entry<String, String> entry : ext.getNamedTags().entrySet()) {
@@ -214,9 +224,9 @@ public class DockerPlugin implements Plugin<Project> {
           for (Map.Entry<String, TagConfig> entry : tags.entrySet()) {
             String taskName = entry.getKey();
             TagConfig tagConfig = entry.getValue();
-            Exec tagSubTask =
+            TaskProvider<Exec> tagSubTask =
                 p.getTasks()
-                    .create(
+                    .register(
                         "dockerTag" + taskName,
                         Exec.class,
                         task -> {
@@ -233,10 +243,10 @@ public class DockerPlugin implements Plugin<Project> {
                                       nameSupplier.get(),
                                       tagConfig.tagTask.get()));
                         });
-            tag.dependsOn(tagSubTask);
-            Exec pushSubTask =
+            tag.configure(task -> task.dependsOn(tagSubTask));
+            TaskProvider<Exec> pushSubTask =
                 p.getTasks()
-                    .create(
+                    .register(
                         "dockerPush" + taskName,
                         Exec.class,
                         task -> {
@@ -252,7 +262,7 @@ public class DockerPlugin implements Plugin<Project> {
                                   task.commandLine(
                                       DockerExecutable.resolve(), "push", tagConfig.tagTask.get()));
                         });
-            pushAllTags.dependsOn(pushSubTask);
+            pushAllTags.configure(task -> task.dependsOn(pushSubTask));
           }
           dockerfileZip.from(ext.getResolvedDockerfile());
         });

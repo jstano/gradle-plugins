@@ -40,13 +40,13 @@ public class DockerComposePlugin implements Plugin<Project> {
             });
     project
         .getTasks()
-        .create(
+        .register(
             "generateDockerCompose",
             GenerateDockerCompose.class,
             task -> {
               task.setConfiguration(dockerConfiguration);
             });
-    project.getTasks().create("dockerComposeUp", DockerComposeUp.class);
-    project.getTasks().create("dockerComposeDown", DockerComposeDown.class);
+    project.getTasks().register("dockerComposeUp", DockerComposeUp.class);
+    project.getTasks().register("dockerComposeDown", DockerComposeDown.class);
   }
 }
