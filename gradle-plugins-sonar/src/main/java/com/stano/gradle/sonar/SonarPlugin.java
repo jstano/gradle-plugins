@@ -20,6 +20,8 @@ class SonarPlugin implements Plugin<Project> {
     sonarExtension.properties(
         props ->
             project
+                .getExtensions()
+                .getExtraProperties()
                 .getProperties()
                 .forEach(
                     (key, value) -> {

@@ -7,18 +7,12 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectReader;
 import org.eclipse.jgit.lib.Ref;
-import org.gradle.api.Project;
 
 public class CommitHashProvider implements Serializable {
   private final File gitRootDir;
 
   public CommitHashProvider(File gitRootDir) {
     this.gitRootDir = gitRootDir;
-  }
-
-  @Deprecated
-  public CommitHashProvider(Project project) {
-    this(project.getRootDir());
   }
 
   @Override

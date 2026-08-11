@@ -33,8 +33,9 @@ dependencies {
 }
 
 tasks.processResources {
-  inputs.property("version", project.version)
+  val projectVersion = project.version
+  inputs.property("version", projectVersion)
   filesMatching("**/stano-plugins.properties") {
-    expand("version" to project.version)
+    expand("version" to projectVersion)
   }
 }

@@ -12,18 +12,12 @@ import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
-import org.gradle.api.Project;
 
 public class CommitTimeProvider implements Serializable {
   private final File gitRootDir;
 
   public CommitTimeProvider(File gitRootDir) {
     this.gitRootDir = gitRootDir;
-  }
-
-  @Deprecated
-  public CommitTimeProvider(Project project) {
-    this(project.getRootDir());
   }
 
   @Override

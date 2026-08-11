@@ -19,8 +19,8 @@ public class ProjectVersionProvider implements Serializable {
   @Override
   public String toString() {
     if (version == null) {
-      String commitTimestamp = new CommitTimeProvider(project).toString();
-      String commitHash = new CommitHashProvider(project).toString();
+      String commitTimestamp = new CommitTimeProvider(project.getRootDir()).toString();
+      String commitHash = new CommitHashProvider(project.getRootDir()).toString();
       if (commitTimestamp != null && commitHash != null) {
         String buildNumber = baseExtension.getBuildNumber();
         if (buildNumber != null) {
