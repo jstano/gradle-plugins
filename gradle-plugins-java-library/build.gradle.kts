@@ -13,8 +13,9 @@ gradlePlugin {
       displayName = "Java Library Plugin"
       description = "Extends com.stano.java for publishable library subprojects. " +
         "Adds javadoc and sources JARs and configures Maven publishing " +
-        "to the private stano-maven repository (URL, username, and password from " +
-        "Gradle properties or STANO_MAVEN_URL / STANO_MAVEN_USERNAME / STANO_MAVEN_PASSWORD). " +
+        "to the private stano-maven repository (URL from Gradle properties or " +
+        "STANO_MAVEN_URL; credentials from STANO_MAVEN_TOKEN for HTTP header auth, " +
+        "or STANO_MAVEN_USERNAME / STANO_MAVEN_PASSWORD for HTTP Basic auth). " +
         "Publishing is silently skipped when STANO_MAVEN_URL is not configured. " +
         "Suppresses enforced-platform Gradle Module Metadata validation warnings."
       tags = listOf("convention", "java", "library", "publishing")

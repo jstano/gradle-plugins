@@ -131,8 +131,12 @@ buildCacheSettings {
 | Gradle Property | Env Variable | Purpose | Required? |
 |---|---|---|---|
 | `com.stano.maven.url` | `STANO_MAVEN_URL` | Private Maven repository URL | No (optional) |
-| `com.stano.maven.username` | `STANO_MAVEN_USERNAME` | Maven credentials | If private repo needs auth |
-| `com.stano.maven.password` | `STANO_MAVEN_PASSWORD` | Maven credentials | If private repo needs auth |
+| `com.stano.maven.username` | `STANO_MAVEN_USERNAME` | Maven credentials (basic auth) | If private repo needs auth and no token is set |
+| `com.stano.maven.password` | `STANO_MAVEN_PASSWORD` | Maven credentials (basic auth) | If private repo needs auth and no token is set |
+| `com.stano.maven.token` | `STANO_MAVEN_TOKEN` | Header-based credential value; takes precedence over username/password | If private repo needs header-based auth |
+| `com.stano.maven.token-header` | `STANO_MAVEN_TOKEN_HEADER` | HTTP header name to send the token as | No (default: `Private-Token`) |
+
+> **Running in GitLab CI:** if the ambient `CI_JOB_TOKEN` variable is set (GitLab CI sets this automatically for every job), it is used as an HTTP header credential (`Job-Token`) and takes precedence over all of the above — no configuration needed.
 | `com.stano.build-cache.type` | `STANO_BUILD_CACHE_TYPE` | Set to `s3` to enable remote build cache | No (default: local only) |
 | `com.stano.build-cache.local.enabled` | — | Enable/disable local build cache | No (default: `true`) |
 | `com.stano.build-cache.s3.bucket` | `STANO_BUILD_CACHE_S3_BUCKET` | S3 bucket name for cache | If using S3 cache |
@@ -324,8 +328,7 @@ plugins {
 **Maven publishing:**
 
 - Repository: `com.stano.maven.url` (from `com.stano.settings`)
-- Credentials: `com.stano.maven.username` / `com.stano.maven.password`
-- Authentication: HTTP header (compatible with private Maven with header-based auth)
+- Credentials: `com.stano.maven.token` (HTTP header auth — header name via `com.stano.maven.token-header`, default `Private-Token`) if set, otherwise `com.stano.maven.username` / `com.stano.maven.password` (HTTP Basic auth)
 
 **Optional property:**
 
@@ -408,7 +411,7 @@ info:
 | `copyOtelJavaagent` | Copy | Copies any `opentelemetry-javaagent*.jar` from classpath to `build/libs/` |
 | `bootJar` | Spring Boot | Packages as executable JAR (archive name = root project name) |
 
-**Build metadata** (automatically written to `application.yml` during `processResources`):
+**Build metadata** (automatically written to `application.yml` during `processResources`, resolved by `BuildInfoProvider` from CI environment variables — GitLab, then GitHub, then Jenkins as a legacy fallback):
 
 ```yaml
 info:
@@ -416,9 +419,9 @@ info:
     version: ${project.version}
     name: ${contextName}
   build:
-    number: ${BUILD_NUMBER}
-    branch: ${BRANCH_NAME}
-    job: ${JOB_NAME}
+    number: ${CI_PIPELINE_IID / GITHUB_RUN_NUMBER / BUILD_NUMBER}
+    branch: ${CI_COMMIT_BRANCH / GITHUB_REF_NAME / CHANGE_BRANCH / BRANCH_NAME}
+    job: ${CI_JOB_NAME / GITHUB_JOB / JOB_NAME}
 ```
 
 ---

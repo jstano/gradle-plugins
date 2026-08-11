@@ -1,21 +1,16 @@
 package com.stano.gradle.javalibrary.features;
 
+import com.stano.gradle.base.MavenRepositoryCredentials;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.repositories.MavenArtifactRepository;
-import org.gradle.api.artifacts.repositories.PasswordCredentials;
 import org.gradle.api.publish.PublishingExtension;
 import org.gradle.api.publish.maven.MavenPublication;
 import org.gradle.api.publish.tasks.GenerateModuleMetadata;
-import org.gradle.authentication.http.HttpHeaderAuthentication;
 import org.gradle.jvm.tasks.Jar;
 
 public class MavenRepositoryUtils {
   private static final String STANO_MAVEN_URL_PROPERTY = "com.stano.maven.url";
-  private static final String STANO_MAVEN_USERNAME_PROPERTY = "com.stano.maven.username";
-  private static final String STANO_MAVEN_PASSWORD_PROPERTY = "com.stano.maven.password";
   private static final String STANO_MAVEN_URL_ENVIRONMENT = "STANO_MAVEN_URL";
-  private static final String STANO_MAVEN_USERNAME_ENVIRONMENT = "STANO_MAVEN_USERNAME";
-  private static final String STANO_MAVEN_PASSWORD_ENVIRONMENT = "STANO_MAVEN_PASSWORD";
 
   public static void configureStanoMavenRepository(
       Project project, MavenArtifactRepository repository) {
@@ -25,7 +20,8 @@ public class MavenRepositoryUtils {
     }
     repository.setName("stano-maven");
     repository.setUrl(stanoMavenUrl);
-    setRepositoryCredentials(project, repository);
+    var properties = project.getExtensions().getExtraProperties().getProperties();
+    MavenRepositoryCredentials.configureCredentials(properties, repository);
   }
 
   public static void configurePublishing(Project project) {
@@ -77,23 +73,5 @@ public class MavenRepositoryUtils {
         .configureEach(
             generateModuleMetadata ->
                 generateModuleMetadata.getSuppressedValidationErrors().add("enforced-platform"));
-  }
-
-  private static void setRepositoryCredentials(
-      Project project, MavenArtifactRepository repository) {
-    var properties = project.getExtensions().getExtraProperties().getProperties();
-    var username =
-        properties.containsKey(STANO_MAVEN_USERNAME_PROPERTY)
-            ? properties.get(STANO_MAVEN_USERNAME_PROPERTY).toString()
-            : System.getenv(STANO_MAVEN_USERNAME_ENVIRONMENT);
-    var password =
-        properties.containsKey(STANO_MAVEN_PASSWORD_PROPERTY)
-            ? properties.get(STANO_MAVEN_PASSWORD_PROPERTY).toString()
-            : System.getenv(STANO_MAVEN_PASSWORD_ENVIRONMENT);
-    var credentials = repository.getCredentials(PasswordCredentials.class);
-    credentials.setUsername(username);
-    credentials.setPassword(password);
-    repository.authentication(
-        auth -> auth.create("header", HttpHeaderAuthentication.class, header -> {}));
   }
 }

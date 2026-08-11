@@ -33,8 +33,11 @@ Optional environment variables (can also be set via `gradle.properties` or `extr
 | `STANO_SONAR_HOST_URL` | SonarQube host URL |
 | `STANO_SONAR_TOKEN` | SonarQube auth token |
 | `STANO_MAVEN_URL` | Private Maven repository URL |
-| `STANO_MAVEN_USERNAME` / `STANO_MAVEN_PASSWORD` | Maven credentials |
+| `STANO_MAVEN_USERNAME` / `STANO_MAVEN_PASSWORD` | Maven credentials (HTTP Basic auth) |
+| `STANO_MAVEN_TOKEN` / `STANO_MAVEN_TOKEN_HEADER` | Maven credentials (HTTP header auth; takes precedence over username/password; header name defaults to `Private-Token`) |
 | `STANO_BUILD_CACHE_S3_BUCKET` / `STANO_BUILD_CACHE_S3_REGION` / `STANO_BUILD_CACHE_S3_ACCESS_KEY_ID` / `STANO_BUILD_CACHE_S3_SECRET_ACCESS_KEY` | S3 remote build cache |
+
+In GitLab CI, the ambient `CI_JOB_TOKEN` variable (set automatically for every job) is auto-detected and used as HTTP header credentials (`Job-Token`), taking precedence over all of the above — no configuration needed.
 
 ---
 

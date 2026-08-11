@@ -8,9 +8,15 @@ import org.gradle.api.Project;
 
 public class BranchNameProvider implements Serializable {
   private final File gitRootDir;
+  private final Environment environment;
 
   public BranchNameProvider(File gitRootDir) {
+    this(gitRootDir, new SystemEnvironment());
+  }
+
+  BranchNameProvider(File gitRootDir, Environment environment) {
     this.gitRootDir = gitRootDir;
+    this.environment = environment;
   }
 
   @Deprecated
@@ -20,9 +26,15 @@ public class BranchNameProvider implements Serializable {
 
   @Override
   public String toString() {
-    String branchName = System.getenv("CHANGE_BRANCH");
+    String branchName = environment.getEnvironmentVariable("CI_COMMIT_BRANCH");
     if (branchName == null) {
-      branchName = System.getenv("BRANCH_NAME");
+      branchName = environment.getEnvironmentVariable("GITHUB_REF_NAME");
+    }
+    if (branchName == null) {
+      branchName = environment.getEnvironmentVariable("CHANGE_BRANCH");
+    }
+    if (branchName == null) {
+      branchName = environment.getEnvironmentVariable("BRANCH_NAME");
     }
     if (branchName == null) {
       try (Git git = Git.open(gitRootDir)) {

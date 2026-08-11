@@ -34,6 +34,20 @@ export STANO_MAVEN_USERNAME=<username>
 export STANO_MAVEN_PASSWORD=<password>
 ```
 
+**Option C: HTTP header-based credentials**
+
+If your private Maven repository authenticates via an HTTP header instead of basic auth (e.g. a GitLab personal access token or deploy token), set a token instead of username/password — it takes precedence when both are configured:
+
+```properties
+com.stano.maven.url=https://your-private-maven-repo/repository/releases
+com.stano.maven.token=<token>
+com.stano.maven.token-header=Private-Token
+```
+
+`com.stano.maven.token-header` (or `STANO_MAVEN_TOKEN_HEADER`) is optional and defaults to `Private-Token`.
+
+**Running in GitLab CI:** no configuration is needed for the private repo's credentials — GitLab CI automatically sets `CI_JOB_TOKEN` for every job, and the plugin auto-detects it and authenticates with header `Job-Token`. This takes precedence over any of the options above, since the job token is short-lived and scoped to the pipeline.
+
 If you do not have a private Maven repository, you can safely omit these settings.
 
 ### 2. Optional: S3 Build Cache (for faster CI/local builds)
@@ -425,7 +439,7 @@ Credentials required (from dev environment setup above).
 
 **Error:** "Could not find artifact com.example:lib:1.0.0"
 
-**Fix:** If you have configured a private Maven repository, verify `STANO_MAVEN_URL`, `STANO_MAVEN_USERNAME`, `STANO_MAVEN_PASSWORD` are set in `~/.gradle/gradle.properties` or as environment variables.
+**Fix:** If you have configured a private Maven repository, verify `STANO_MAVEN_URL` and either `STANO_MAVEN_TOKEN` (header-based auth) or `STANO_MAVEN_USERNAME` / `STANO_MAVEN_PASSWORD` (basic auth) are set in `~/.gradle/gradle.properties` or as environment variables.
 
 ### Spotless Formatting Failures
 

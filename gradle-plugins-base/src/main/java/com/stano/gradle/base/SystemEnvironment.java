@@ -1,8 +1,9 @@
 package com.stano.gradle.base;
 
+import java.io.Serializable;
 import java.util.Map;
 
-public class SystemEnvironment implements Environment {
+public class SystemEnvironment implements Environment, Serializable {
   @Override
   public Map<String, String> getAllEnvironmentVariables() {
     return System.getenv();
