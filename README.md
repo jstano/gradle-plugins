@@ -1,6 +1,6 @@
 # gradle-plugins
 
-A suite of Gradle plugins for building opinionated Spring Boot applications that follow clean architecture principles. These plugins are the build-system companion to the [Modular Spring Platform (MSP)](https://github.com/jstano/modular-spring-platform) — they wire up the compiler, formatter, test runner, JaCoCo coverage, Docker build, and SonarQube integration so teams can focus on domain logic rather than Gradle configuration.
+A suite of Gradle plugins for building opinionated Spring Boot applications that follow clean architecture principles. These plugins are the build-system companion to the [Modular Spring Platform (MSP)](https://github.com/jstano/modular-spring-platform) — they wire up the compiler, formatter, test runner, JaCoCo coverage, Maven Central publishing, Docker build, and SonarQube integration so teams can focus on domain logic rather than Gradle configuration.
 
 ## About the Modular Spring Platform
 
@@ -8,11 +8,11 @@ These plugins are designed for use with the [Modular Spring Platform (MSP)](http
 
 ## Overview
 
-This project publishes 12 Gradle plugins to the Gradle Plugin Portal. The plugins are designed to work together as a cohesive build system:
+This project publishes 13 Gradle plugins to the Gradle Plugin Portal. The plugins are designed to work together as a cohesive build system:
 
 - **Settings-level**: `com.stano.settings` (configures repositories, build cache, plugin versions)
 - **Root project**: `com.stano.base`, `com.stano.application`, `com.stano.library` (set up base infrastructure and versioning)
-- **Subproject**: `com.stano.java`, `com.stano.java-library`, `com.stano.spring-boot` (configure compilers, testing, publishing)
+- **Subproject**: `com.stano.java`, `com.stano.java-library`, `com.stano.spring-boot`, `com.stano.maven-central-publish` (configure compilers, testing, publishing)
 - **Optional infrastructure**: `com.stano.sonar` (SonarQube), `com.stano.kotlin` (Kotlin JVM support), `com.stano.docker*` (Docker build/run)
 
 **Plugin dependency hierarchy:**
@@ -26,7 +26,8 @@ com.stano.application OR com.stano.library
     ↓
 (on subprojects)
 com.stano.java ← required for Java subprojects
-    ├── com.stano.java-library (extends java, adds publishing)
+    ├── com.stano.java-library (extends java, adds private-repo publishing)
+    │       └── com.stano.maven-central-publish (composable alongside java-library)
     └── com.stano.spring-boot (alongside java for Spring apps)
 
 Optional (any project):
@@ -45,7 +46,7 @@ This **must** be the first plugin block, before `rootProject.name`:
 
 ```kotlin
 plugins {
-  id("com.stano.settings") version "0.1.0"  // replace it with actual version
+  id("com.stano.settings") version "0.1.12" // check the latest published version
 }
 
 rootProject.name = "my-app"
@@ -59,11 +60,7 @@ buildCacheSettings {
 // Can also be set via gradle.properties or env var STANO_MAVEN_URL
 ```
 
-This plugin:
-- Configures `dependencyResolutionManagement` to use `mavenLocal()` and `mavenCentral()` by default
-- Optionally adds a private Maven repository if `STANO_MAVEN_URL` is configured
-- Optionally enables S3 build cache (set `com.stano.build-cache.type=s3`)
-- Automatically pins Kotlin JVM and all `com.stano.*` plugins to compatible versions
+This plugin also pins the version of every other `com.stano.*` plugin (and the Kotlin JVM plugin), so subprojects don't need to specify a `version(...)` on their own `plugins { id(...) }` blocks. See [`docs/settings.md`](docs/settings.md) for details.
 
 ### 2. Apply `com.stano.application` or `com.stano.library` to the Root Project
 
@@ -72,7 +69,7 @@ This plugin:
 ```kotlin
 // build.gradle.kts (root project)
 plugins {
-  id("com.stano.application") version "0.1.0"
+  id("com.stano.application")
 }
 ```
 
@@ -81,7 +78,7 @@ plugins {
 ```kotlin
 // build.gradle.kts (root project)
 plugins {
-  id("com.stano.library") version "0.1.0"
+  id("com.stano.library")
 }
 ```
 
@@ -90,593 +87,35 @@ plugins {
 ```kotlin
 // build.gradle.kts (each Java/Kotlin subproject)
 plugins {
-  id("com.stano.java") version "0.1.0"
+  id("com.stano.java")
 }
 
 // For a library that publishes to Maven:
-// id("com.stano.java-library") version "0.1.0"
+// id("com.stano.java-library")
 ```
 
 ---
 
 ## Plugin Reference
 
-### `com.stano.settings`
-
-**Applied to:** `settings.gradle.kts`
-**Description:** Configures repository resolution, build cache, and pins plugin versions.
-
-**Minimal example:**
-
-```kotlin
-plugins {
-  id("com.stano.settings") version "0.1.0"
-}
-
-rootProject.name = "my-project"
-
-buildCacheSettings {
-  buildCachePrefix.set("my-org")
-}
-```
-
-**Extension: `buildCacheSettings`**
-
-| Property | Type | Default | Purpose |
-|----------|------|---------|---------|
-| `buildCachePrefix` | `Property<String>` | `rootProject.name` | S3 key prefix for remote build cache |
-
-**Properties (Gradle property → environment variable)**
-
-| Gradle Property | Env Variable | Purpose | Required? |
-|---|---|---|---|
-| `com.stano.maven.url` | `STANO_MAVEN_URL` | Private Maven repository URL | No (optional) |
-| `com.stano.maven.username` | `STANO_MAVEN_USERNAME` | Maven credentials (basic auth) | If private repo needs auth and no token is set |
-| `com.stano.maven.password` | `STANO_MAVEN_PASSWORD` | Maven credentials (basic auth) | If private repo needs auth and no token is set |
-| `com.stano.maven.token` | `STANO_MAVEN_TOKEN` | Header-based credential value; takes precedence over username/password | If private repo needs header-based auth |
-| `com.stano.maven.token-header` | `STANO_MAVEN_TOKEN_HEADER` | HTTP header name to send the token as | No (default: `Private-Token`) |
-
-> **Running in GitLab CI:** if the ambient `CI_JOB_TOKEN` variable is set (GitLab CI sets this automatically for every job), it is used as an HTTP header credential (`Job-Token`) and takes precedence over all of the above — no configuration needed.
-| `com.stano.build-cache.type` | `STANO_BUILD_CACHE_TYPE` | Set to `s3` to enable remote build cache | No (default: local only) |
-| `com.stano.build-cache.local.enabled` | — | Enable/disable local build cache | No (default: `true`) |
-| `com.stano.build-cache.s3.bucket` | `STANO_BUILD_CACHE_S3_BUCKET` | S3 bucket name for cache | If using S3 cache |
-| `com.stano.build-cache.s3.region` | `STANO_BUILD_CACHE_S3_REGION` | AWS region | If using S3 cache |
-| `com.stano.build-cache.s3.access-key-id` | `STANO_BUILD_CACHE_S3_ACCESS_KEY_ID` | AWS access key | If using S3 cache |
-| `com.stano.build-cache.s3.secret-access-key` | `STANO_BUILD_CACHE_S3_SECRET_ACCESS_KEY` | AWS secret key | If using S3 cache |
-| `com.stano.build-cache.push-enabled` | `STANO_BUILD_CACHE_PUSH_ENABLED` | Allow pushing to S3 cache | No (default: `false`) |
-
----
-
-### `com.stano.base`
-
-**Applied to:** Root project only
-**Description:** Registers `BaseExtension` on the root project with cross-project configuration (Java version, versioning, CI metadata, Docker/Pact broker coordinates). Also registers `jacocoRootReport` task to aggregate coverage from all subprojects.
-
-**Minimal example:**
-
-```kotlin
-// build.gradle.kts (root project)
-plugins {
-  id("com.stano.base") version "0.1.0"
-}
-
-// (Optional) Configure via root extension:
-extensions.getByType<BaseExtension>().apply {
-  javaVersion.set("21")  // or read from system
-  mspVersion.set("2.0.0")
-  contextName.set("my-service")
-  dockerRegistryHost.set("docker.mycompany.com")
-}
-```
-
-**Extension: `root` (type `BaseExtension`)**
-
-| Property | Type | Default | Source | Purpose |
-|----------|------|---------|--------|---------|
-| `javaVersion` | `String` | `"21"` | `javaVersion` prop / env | Java language version for toolchain |
-| `mspVersion` | `String` | `null` | `mspVersion` prop | Internal MSP BOM version |
-| `contextName` | `String` | `null` | `contextName` prop | Application/service logical name |
-| `buildNumber` | `String` | `null` | `BUILD_NUMBER` env | CI build number |
-| `buildTime` | `LocalDateTime` | now (Chicago TZ) | computed | Build timestamp |
-| `pactBrokerUrl` | `String` | `null` | `pactBrokerUrl` prop / env | Pact contract broker URL |
-| `pactBrokerUsername` | `String` | `null` | `pactBrokerUsername` prop / env | Pact broker credentials |
-| `pactBrokerPassword` | `String` | `null` | `pactBrokerPassword` prop / env | Pact broker credentials |
-| `pactBrokerToken` | `String` | `null` | `pactBrokerToken` prop / env | Pact broker auth token |
-| `dockerRegistryHost` | `String` | `null` | `dockerRegistryHost` prop / env | Docker registry hostname |
-| `dockerRegistryUsername` | `String` | `null` | `dockerRegistryUsername` prop / env | Docker registry credentials |
-| `dockerRegistryPassword` | `String` | `null` | `dockerRegistryPassword` prop / env | Docker registry credentials |
-| `dockerRegistryAwsProfile` | `String` | `null` | `dockerRegistryAwsProfile` prop / env | AWS profile for ECR login |
-| `dependencyLocking` | `Boolean` | `null` (unset) | `com.stano.dependency-locking` prop / env | Enables dependency locking in `com.stano.java` subprojects. `null` means "no explicit override" — `com.stano.application`/`com.stano.library` set their own default if unset; an explicit value here always wins |
-| `branchNameProvider` | `Provider<String>` | auto-computed | Git/CI env | Current branch name |
-| `commitHashProvider` | `Provider<String>` | auto-computed | Git HEAD | Abbreviated commit hash |
-| `commitTimeProvider` | `Provider<String>` | auto-computed | Git HEAD | Commit timestamp |
-| `repositoryUrlProvider` | `Provider<String>` | auto-computed | Git remote | Git repository URL |
-| `repositoryOrganizationProvider` | `Provider<String>` | auto-computed | parsed from URL | Organization from git URL |
-
-**Tasks registered:**
-
-| Task | Type | Purpose |
-|------|------|---------|
-| `jacocoRootReport` | `JacocoReport` | Aggregates JaCoCo exec files from all subprojects; produces HTML and XML reports in `build/reports/jacoco/` |
-
----
-
-### `com.stano.application`
-
-**Applied to:** Root project only
-**Extends:** `com.stano.base`
-**Description:** Everything `com.stano.base` does, plus automatically sets `project.version` for all subprojects based on git metadata (commit timestamp + hash, optionally with CI build number). Also defaults `dependencyLocking` to `true` (if not explicitly overridden), since applications benefit most from a fully reproducible, locked dependency graph.
-
-**Minimal example:**
-
-```kotlin
-// build.gradle.kts (root project)
-plugins {
-  id("com.stano.application") version "0.1.0"
-}
-```
-
-The version is computed as:
-- With git + build number: `20250615120000-a1b2c3d4-123` (timestamp-hash-buildNumber)
-- With git only: `20250615120000-a1b2c3d4` (timestamp-hash)
-- Fallback (no git): `20250615120000` (build time in `yyyyMMddHHmmss`)
-
----
-
-### `com.stano.library`
-
-**Applied to:** Root project only
-**Extends:** `com.stano.base`
-**Description:** Like `com.stano.application` but does NOT set `project.version`. Use for multi-module library builds where version is managed elsewhere (e.g., in `gradle.properties` or a parent POM). Defaults `dependencyLocking` to `false` (if not explicitly overridden), since libraries are consumed by other projects and often want resolution flexibility.
-
-**Minimal example:**
-
-```kotlin
-// build.gradle.kts (root project)
-plugins {
-  id("com.stano.library") version "0.1.0"
-}
-
-version = "1.2.3"  // manage version yourself
-```
-
----
-
-### `com.stano.java`
-
-**Applied to:** Each Java/Kotlin subproject
-**Prerequisite:** `com.stano.base` (or `com.stano.application`/`com.stano.library`) must be applied to the root project
-**Description:** Core Java subproject plugin. Configures compilers (Java toolchain + incremental), applies Spotless (Google Java Format), configures test execution (JUnit Platform, Pact broker properties), manages JaCoCo coverage.
-
-**Minimal example:**
-
-```kotlin
-// build.gradle.kts (subproject)
-plugins {
-  id("com.stano.java") version "0.1.0"
-}
-
-dependencies {
-  implementation("com.example:my-lib:0.1.0")
-  testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
-}
-```
-
-**Extension: `javaConventions` (marker, no properties)**
-
-**Features applied:**
-
-- Applies `java-library`, `jacoco`
-- Spotless with Google Java Format 1.35.0 (enforced on `check` task)
-- Java compiler: toolchain from `javaVersion` (default `"21"`), incremental compilation, forked JVM with `Xmx4096m`
-- Test execution: `useJUnitPlatform()`, `Xmx4096m`/`Xms512m` heap, JVM args for reflective access
-- JaCoCo: all `test` tasks finalize with `jacocoTestReport`; reports in `build/reports/jacoco/`
-- Automatic MSP BOM inclusion (when `mspVersion` is set):
-  - Excludes `commons-logging`, `log4j` globally
-  - Adds `com.stano:msp-bom` as enforced platform
-  - Adds `org.jetbrains:annotations` as `compileOnly`
-  - Adds `com.stano:msp-test-starter` as `testImplementation`
-- Automatic mapstruct processor: if `org.mapstruct:mapstruct` is detected in any dependency configuration, `org.mapstruct:mapstruct-processor` is auto-added to `annotationProcessor`
-- Dependency locking (STRICT mode, via `lockAllConfigurations()`) when `BaseExtension.dependencyLocking` resolves to `true` — defaulted by `com.stano.application` (on) or `com.stano.library` (off); override explicitly with the `com.stano.dependency-locking` project/system property (`-Pcom.stano.dependency-locking=false`). Run `./gradlew dependencies --write-locks` to generate/update `gradle.lockfile`s
-
-**Tasks registered:**
-
-| Task | Type | Purpose |
-|------|------|---------|
-| `spotlessCheck` | (Spotless) | Verify code formatting (wired to `check`) |
-| `spotlessApply` | (Spotless) | Auto-fix code formatting |
-| `test` | `Test` | Run all JUnit 5 tests with coverage |
-| `jacocoTestReport` | `JacocoReport` | Generate HTML/XML coverage reports |
-
-**Test system properties** (set automatically):
-
-| Property | Value |
-|----------|-------|
-| `pactBrokerUrl` | From `BaseExtension.pactBrokerUrl` |
-| `pactBrokerUsername` | From `BaseExtension.pactBrokerUsername` |
-| `pactBrokerPassword` | From `BaseExtension.pactBrokerPassword` |
-| `pact.provider.version` | `project.version` |
-| `pact.provider.branch` | Current branch name |
-
----
-
-### `com.stano.java-library`
-
-**Applied to:** Library subprojects that publish to Maven
-**Extends:** `com.stano.java` (plus `maven-publish`)
-**Description:** Adds sources + Javadoc JARs, configures Maven publishing to the private Stano repository.
-
-**Minimal example:**
-
-```kotlin
-// build.gradle.kts (library subproject)
-plugins {
-  id("com.stano.java-library") version "0.1.0"
-}
-
-// Optional: prefix artifact IDs for disambiguation in multi-module builds
-// Set via gradle.properties or -P flag:
-// artifactIdPrefix = "myorg"
-```
-
-**Artifacts published to Maven:**
-
-- `{name}.jar` (compiled classes)
-- `{name}-sources.jar` (source code)
-- `{name}-javadoc.jar` (Javadoc)
-
-**Maven publishing:**
-
-- Repository: `com.stano.maven.url` (from `com.stano.settings`)
-- Credentials: `com.stano.maven.token` (HTTP header auth — header name via `com.stano.maven.token-header`, default `Private-Token`) if set, otherwise `com.stano.maven.username` / `com.stano.maven.password` (HTTP Basic auth)
-
-**Optional property:**
-
-| Property | Type | Purpose |
-|----------|------|---------|
-| `artifactIdPrefix` | String (project property) | If set, prefixes artifact IDs as `{prefix}-{projectName}` for disambiguation |
-
----
-
-### `com.stano.kotlin`
-
-**Applied to:** Java subprojects that require Kotlin JVM compilation support (alongside `com.stano.java`)
-**Extends:** `com.stano.java` (transparent dependency via `plugins.apply(JavaPlugin.class)`)
-**Description:** Opt-in Kotlin JVM support. Applies the Kotlin JVM Gradle plugin and configures `KotlinCompile` tasks to use the same compiler flags as the Java compiler, with incremental compilation enabled.
-
-**Minimal example:**
-
-```kotlin
-// build.gradle.kts (subproject with Kotlin sources)
-plugins {
-  id("com.stano.java") version "0.1.0"
-  id("com.stano.kotlin") version "0.1.0"
-}
-
-dependencies {
-  implementation("org.jetbrains.kotlin:kotlin-stdlib:2.0.0")
-}
-```
-
-**Features applied:**
-
-- Applies `org.jetbrains.kotlin.jvm` plugin (version pinned via `com.stano.settings`)
-- Configures `KotlinCompile` tasks: incremental compilation, same free compiler args as Java (`-Xlint:none`, `-Xdoclint:none`, `-nowarn`, `-parameters`)
-- Kotlin compiler respects `javaVersion` toolchain from `BaseExtension` (default `"21"`)
-
-**Note:** `com.stano.java` does NOT apply Kotlin by default. Add `com.stano.kotlin` only to projects that actually compile Kotlin sources. If both `com.stano.java` and `com.stano.kotlin` are applied, the Kotlin plugin is applied transparently (idempotent, no duplication).
-
----
-
-### `com.stano.spring-boot`
-
-**Applied to:** Spring Boot application subprojects (alongside `com.stano.java`)
-**Prerequisite:** `BaseExtension` must be available on the root project (from `com.stano.base` or `com.stano.application`)
-**Description:** Spring Boot integration. Applies Spring Boot plugin, adds Spring + MSP dependencies, copies OTel Java agent JAR, updates `application.yml` with build metadata during resource processing.
-
-**Minimal example:**
-
-```kotlin
-// build.gradle.kts (Spring Boot subproject)
-plugins {
-  id("com.stano.java") version "0.1.0"
-  id("com.stano.spring-boot") version "0.1.0"
-}
-
-dependencies {
-  implementation("org.springframework.boot:spring-boot-starter-web")
-}
-```
-
-Also requires an `src/main/resources/application.yml` with an `info.app` section:
-
-```yaml
-info:
-  app:
-    name: My Service
-    description: "Service description"
-```
-
-**Dependencies auto-added:**
-
-- `developmentOnly`: `org.springframework.boot:spring-boot-devtools`
-- `runtimeOnly`: `io.micrometer:micrometer-registry-prometheus`
-- `implementation`: `com.stano:msp-spring-boot-application:{mspVersion}`
-- `testImplementation`: `com.stano:msp-spring-test-starter:{mspVersion}`
-
-**Tasks registered:**
-
-| Task | Type | Purpose |
-|------|------|---------|
-| `copyOtelJavaagent` | Copy | Copies any `opentelemetry-javaagent*.jar` from classpath to `build/libs/` |
-| `bootJar` | Spring Boot | Packages as executable JAR (archive name = root project name) |
-
-**Build metadata** (automatically written to `application.yml` during `processResources`, resolved by `BuildInfoProvider` from CI environment variables — GitLab, then GitHub, then Jenkins as a legacy fallback):
-
-```yaml
-info:
-  app:
-    version: ${project.version}
-    name: ${contextName}
-  build:
-    number: ${CI_PIPELINE_IID / GITHUB_RUN_NUMBER / BUILD_NUMBER}
-    branch: ${CI_COMMIT_BRANCH / GITHUB_REF_NAME / CHANGE_BRANCH / BRANCH_NAME}
-    job: ${CI_JOB_NAME / GITHUB_JOB / JOB_NAME}
-```
-
----
-
-### `com.stano.sonar`
-
-**Applied to:** Root project (optional, silently skips if not configured)
-**Description:** SonarQube integration. Applies SonarQube plugin and configures analysis properties when host and token are provided.
-
-**Minimal example:**
-
-```kotlin
-// build.gradle.kts (root project)
-plugins {
-  id("com.stano.sonar") version "0.1.0"
-}
-
-// Configure via gradle.properties or environment:
-// sonar.host.url = https://sonar.mycompany.com
-// SONAR_TOKEN = squ_abc123...
-```
-
-**Configuration properties:**
-
-| Gradle Property | Env Variable | Purpose |
-|---|---|---|
-| `sonar.host.url` | `SONAR_HOST_URL` | SonarQube server URL |
-| `sonar.token` | `SONAR_TOKEN` | SonarQube authentication token |
-
-**Behavior:**
-
-- When both `sonar.host.url` and `sonar.token` are configured (as a Gradle property or the env var fallback): applies the SonarQube plugin and sets the properties below.
-- When not configured: logs a warning and skips entirely — `org.sonarqube` is never applied, so no `sonarqube` task is registered (does NOT fail the build).
-- Any additional Gradle project property whose key starts with `sonar.` is also copied through to the Sonar extension, so consumers can set extra analysis properties directly.
-
-**SonarQube properties set:**
-
-- `sonar.host.url` — from the `sonar.host.url` property or `SONAR_HOST_URL` env var
-- `sonar.token` — from the `sonar.token` property or `SONAR_TOKEN` env var
-- `sonar.projectName` = `project.name`
-- `sonar.projectKey` = `{project.group}:{project.name}`
-- `sonar.projectVersion` = `project.version`
-
----
-
-### `com.stano.docker`
-
-**Applied to:** Any project (typically root or a subproject with a Dockerfile)
-**Description:** Full Docker image build, tag, and push pipeline. Uses `docker buildx build` by default for multi-platform support.
-
-**Minimal example:**
-
-```kotlin
-// build.gradle.kts
-plugins {
-  id("com.stano.docker") version "0.1.0"
-}
-
-docker {
-  name.set("docker.mycompany.com/my-org/my-service:latest")
-  dockerfile.set(file("Dockerfile"))
-  buildArgs.put("BASE_IMAGE", "openjdk:21-jdk-slim")
-  labels.put("com.example.version", project.version.toString())
-}
-```
-
-**Extension: `docker` (type `DockerExtension`)**
-
-| Property | Type | Default | Purpose |
-|----------|------|---------|---------|
-| `name` | `Property<String>` | required | Full Docker image name with tag (e.g., `registry/org/image:v1.0`) |
-| `dockerfile` | `Property<File>` | `./Dockerfile` | Path to Dockerfile |
-| `buildArgs` | `MapProperty<String,String>` | empty | Docker build args (`--build-arg KEY=VALUE`) |
-| `labels` | `MapProperty<String,String>` | empty | Docker image labels (`--label KEY=VALUE`) |
-| `buildx` | `Property<Boolean>` | `true` | Use `docker buildx build` (vs `docker build`) |
-| `platform` | `SetProperty<String>` | `linux/amd64` | Buildx platforms (e.g., `linux/amd64`, `linux/arm64`) |
-| `pull` | `Property<Boolean>` | `false` | Always pull base image (`--pull`) |
-| `noCache` | `Property<Boolean>` | `false` | Do not use build cache (`--no-cache`) |
-| `network` | `Property<String>` | `null` | Docker network mode (`--network`) |
-| `load` | `Property<Boolean>` | `false` | Load image into local Docker daemon (buildx only; mutually exclusive with `push`) |
-| `push` | `Property<Boolean>` | `false` | Push to registry (buildx only; mutually exclusive with `load`) |
-| `builder` | `Property<String>` | `null` | Buildx builder instance to use |
-| `files(Closure)` | `CopySpec` | — | Additional files to include in Docker build context |
-
-**Tasks registered:**
-
-| Task | Type | Group | Purpose |
-|------|------|-------|---------|
-| `dockerClean` | Delete | Docker | Removes `build/docker/` directory |
-| `dockerPrepare` | Copy | Docker | Copies Dockerfile and configured files into `build/docker/` |
-| `docker` | Exec | Docker | Runs `docker [buildx] build` with all configured options |
-| `dockerTag{Name}` | Exec | Docker | Tags image with a specific tag (one per configured tag) |
-| `dockerTag` | Task | Docker | Depends on all `dockerTag*` tasks |
-| `dockerPush{Name}` | Exec | Docker | Pushes specific tagged image to registry |
-| `dockerTagsPush` | Task | Docker | Aggregates all push tasks |
-| `dockerPush` | Task | Docker | Alias for `dockerTagsPush` |
-| `dockerImageUrl` | Task | Docker | Writes image name to `build/docker-image-url.txt` |
-| `dockerLogin` | Exec | Docker | Logs into Docker registry (auto-detects AWS ECR) |
-| `dockerLogout` | Exec | Docker | Logs out of Docker registry |
-
-**Auto-configuration when `com.stano.spring-boot` is also applied:**
-
-- `docker.name` → `{dockerRegistryHost}/{org}/{contextName}/{branch}:{version}`
-- `docker.files()` → outputs of `bootJar` task
-- Build args: `DOCKER_REGISTRY`, `PROJECT_VERSION`, `CONTEXT_NAME`, `BUILD_NUMBER`
-- Labels: `com.stano.build-hostname`, `com.stano.build-username`, `com.stano.repository-url`, `com.stano.branch`, `com.stano.build-number`, `com.stano.commit-hash`, `com.stano.commit-time`
-
-**Example: multi-platform build with push:**
-
-```kotlin
-docker {
-  name.set("docker.mycompany.com/my-service:${project.version}")
-  buildx.set(true)
-  platform.set(setOf("linux/amd64", "linux/arm64"))
-  push.set(true)
-  buildArgs.put("BASE_IMAGE", "eclipse-temurin:21-jdk-alpine")
-}
-
-// ./gradlew docker dockerPush
-```
-
----
-
-### `com.stano.docker-compose`
-
-**Applied to:** Any project
-**Description:** Template-based Docker Compose file generation. Substitutes dependency versions and custom tokens into a template, then provides tasks to start/stop services.
-
-**Minimal example:**
-
-```kotlin
-// build.gradle.kts
-plugins {
-  id("com.stano.docker-compose") version "0.1.0"
-}
-
-dockerCompose {
-  template.set(file("docker-compose.yml.template"))
-  dockerComposeFile.set(file("docker-compose.yml"))
-  templateToken("LOG_LEVEL", "INFO")
-}
-```
-
-**Template file** (`docker-compose.yml.template`):
-
-```yaml
-version: '3.8'
-services:
-  postgres:
-    image: postgres:15
-  app:
-    image: my-org/my-app:{{project.version}}
-    environment:
-      LOG_LEVEL: "{{LOG_LEVEL}}"
-      DATABASE_URL: "postgresql://postgres:5432/mydb"
-    depends_on:
-      - postgres
-```
-
-**Extension: `dockerCompose`**
-
-| Property | Type | Default | Purpose |
-|----------|------|---------|---------|
-| `template` | `Property<File>` | `docker-compose.yml.template` | Path to template file |
-| `dockerComposeFile` | `Property<File>` | `docker-compose.yml` | Output file path |
-| `templateTokens` | `MapProperty<String,String>` | empty | Token substitutions (`{{key}}` → value) |
-
-**Tasks registered:**
-
-| Task | Type | Group | Purpose |
-|------|------|-------|---------|
-| `generateDockerCompose` | Generate | Docker | Processes template and writes `docker-compose.yml` |
-| `dockerComposeUp` | Exec | Docker | Runs `docker compose up -d` |
-| `dockerComposeDown` | Exec | Docker | Runs `docker compose down` |
-
-**Token format:**
-
-- `{{group:artifact}}` → auto-resolved from dependency versions (e.g., `org.postgresql:postgresql` → `15.0`)
-- `{{key}}` → replaced from `templateTokens` map
-- Undefined tokens cause task failure
-
----
-
-### `com.stano.docker-run`
-
-**Applied to:** Any project
-**Description:** Configures a named Docker container with ports, volumes, environment, and network. Provides tasks to run, stop, inspect, and remove the container.
-
-**Minimal example:**
-
-```kotlin
-// build.gradle.kts
-plugins {
-  id("com.stano.docker-run") version "0.1.0"
-}
-
-dockerRun {
-  name.set("postgres-test")
-  image.set("postgres:15")
-  ports.set(setOf("5432:5432"))
-  env.put("POSTGRES_PASSWORD", "testpass")
-  daemonize.set(true)
-}
-
-// ./gradlew dockerRun
-// ./gradlew dockerRunStatus
-// ./gradlew dockerStop
-```
-
-**Extension: `dockerRun`**
-
-| Property | Type | Default | Purpose |
-|----------|------|---------|---------|
-| `name` | `Property<String>` | required | Container name (`docker run --name`) |
-| `image` | `Property<String>` | required | Docker image to run |
-| `ports` | `SetProperty<String>` | empty | Port mappings (`"host:container"` or `"container"`) |
-| `volumes` | `MapProperty<Object,String>` | empty | Volume mounts (`localPath` → `containerPath`) |
-| `env` | `MapProperty<String,String>` | empty | Environment variables (`-e KEY=VALUE`) |
-| `network` | `Property<String>` | `null` | Docker network (`--network`) |
-| `arguments` | `ListProperty<String>` | empty | Extra `docker run` arguments |
-| `command` | `ListProperty<String>` | empty | Command to run in container |
-| `daemonize` | `Property<Boolean>` | `true` | Run in background (`-d` flag) |
-| `clean` | `Property<Boolean>` | `false` | Auto-remove container on exit (`--rm` flag) |
-| `ignoreExitValue` | `Property<Boolean>` | `false` | Do not fail build on non-zero exit |
-
-**Tasks registered:**
-
-| Task | Type | Group | Purpose |
-|------|------|-------|---------|
-| `dockerRun` | Exec | Docker Run | Runs `docker run [options] {image} [cmd]` |
-| `dockerRunStatus` | Exec | Docker Run | Prints container state (RUNNING/STOPPED) |
-| `dockerNetworkModeStatus` | Exec | Docker Run | Prints network mode |
-| `dockerStop` | Exec | Docker Run | Runs `docker stop {name}` |
-| `dockerRemoveContainer` | Exec | Docker Run | Runs `docker rm {name}` |
-
-**Example: PostgreSQL for integration tests:**
-
-```kotlin
-dockerRun {
-  name.set("pg-test")
-  image.set("postgres:15-alpine")
-  ports.set(setOf("5432"))  // random host port
-  volumes.put(project.file("test-db-init.sql"), "/docker-entrypoint-initdb.d/init.sql")
-  env.put("POSTGRES_USER", "testuser")
-  env.put("POSTGRES_PASSWORD", "testpass")
-  env.put("POSTGRES_DB", "testdb")
-  daemonize.set(true)
-  clean.set(false)
-}
-
-test {
-  dependsOn("dockerRun")
-  finalizedBy("dockerStop")
-}
-```
+Full documentation for each plugin — extension properties, tasks, gotchas, and worked examples — lives under [`docs/`](docs):
+
+| Plugin ID | Docs |
+|---|---|
+| `com.stano.settings` | [`docs/settings.md`](docs/settings.md) |
+| `com.stano.base` | [`docs/base.md`](docs/base.md) |
+| `com.stano.application` | [`docs/application.md`](docs/application.md) |
+| `com.stano.library` | [`docs/library.md`](docs/library.md) |
+| `com.stano.java` | [`docs/java.md`](docs/java.md) |
+| `com.stano.java-library` | [`docs/java-library.md`](docs/java-library.md) |
+| `com.stano.maven-central-publish` | [`docs/maven-central-publish.md`](docs/maven-central-publish.md) |
+| `com.stano.kotlin` | [`docs/kotlin.md`](docs/kotlin.md) |
+| `com.stano.spring-boot` | [`docs/spring-boot.md`](docs/spring-boot.md) |
+| `com.stano.sonar` | [`docs/sonar.md`](docs/sonar.md) |
+| `com.stano.docker` | [`docs/docker.md`](docs/docker.md) |
+| `com.stano.docker-compose` | [`docs/docker-compose.md`](docs/docker-compose.md) |
+| `com.stano.docker-run` | [`docs/docker-run.md`](docs/docker-run.md) |
+| `gradle-plugins-bom` (not a plugin) | [`docs/bom.md`](docs/bom.md) |
 
 ---
 
@@ -703,7 +142,7 @@ my-app/
 
 ```kotlin
 plugins {
-  id("com.stano.settings") version "0.1.0"
+  id("com.stano.settings") version "0.1.12"
 }
 
 rootProject.name = "my-app"
@@ -716,15 +155,15 @@ include("app", "lib-common")
 
 ```kotlin
 plugins {
-  id("com.stano.application") version "0.1.0"
-  id("com.stano.sonar") version "0.1.0"
+  id("com.stano.application")
+  id("com.stano.sonar")
 }
 
-extensions.getByType<com.stano.gradle.base.BaseExtension>().apply {
-  javaVersion.set("21")
-  mspVersion.set("2.0.0")
-  contextName.set("my-app")
-  dockerRegistryHost.set("docker.mycompany.com")
+root {
+  javaVersion = "21"
+  mspVersion = "2.0.0"
+  contextName = "my-app"
+  dockerRegistryHost = "docker.mycompany.com"
 }
 ```
 
@@ -732,9 +171,9 @@ extensions.getByType<com.stano.gradle.base.BaseExtension>().apply {
 
 ```kotlin
 plugins {
-  id("com.stano.java") version "0.1.0"
-  id("com.stano.spring-boot") version "0.1.0"
-  id("com.stano.docker") version "0.1.0"
+  id("com.stano.java")
+  id("com.stano.spring-boot")
+  id("com.stano.docker")
 }
 
 dependencies {
@@ -743,8 +182,7 @@ dependencies {
 }
 
 docker {
-  dockerfile.set(file("../Dockerfile"))
-  buildArgs.put("BASE_IMAGE", "eclipse-temurin:21-jdk-alpine")
+  buildArgs(mapOf("BASE_IMAGE" to "eclipse-temurin:21-jdk-alpine"))
 }
 ```
 
@@ -752,7 +190,7 @@ docker {
 
 ```kotlin
 plugins {
-  id("com.stano.java-library") version "0.1.0"
+  id("com.stano.java-library")
 }
 
 dependencies {
@@ -797,7 +235,7 @@ my-lib-suite/
 
 ```kotlin
 plugins {
-  id("com.stano.settings") version "0.1.0"
+  id("com.stano.settings") version "0.1.12"
 }
 
 rootProject.name = "my-lib-suite"
@@ -808,7 +246,7 @@ include("core", "spring-integration", "testing-utils")
 
 ```kotlin
 plugins {
-  id("com.stano.library") version "0.1.0"
+  id("com.stano.library")
 }
 
 version = "1.2.3"  // managed in gradle.properties or here
@@ -818,7 +256,7 @@ version = "1.2.3"  // managed in gradle.properties or here
 
 ```kotlin
 plugins {
-  id("com.stano.java-library") version "0.1.0"
+  id("com.stano.java-library")
 }
 
 dependencies {
@@ -830,7 +268,7 @@ dependencies {
 
 ```kotlin
 plugins {
-  id("com.stano.java-library") version "0.1.0"
+  id("com.stano.java-library")
 }
 
 dependencies {
@@ -851,6 +289,8 @@ dependencies {
 # Generate coverage report
 ./gradlew jacocoRootReport
 ```
+
+For publishing to Maven Central instead of (or alongside) a private repository, add `com.stano.maven-central-publish` to a module — see [`docs/maven-central-publish.md`](docs/maven-central-publish.md).
 
 ---
 

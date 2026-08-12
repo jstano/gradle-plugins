@@ -30,8 +30,8 @@ Optional environment variables (can also be set via `gradle.properties` or `extr
 
 | Variable | Purpose |
 |---|---|
-| `STANO_SONAR_HOST_URL` | SonarQube host URL |
-| `STANO_SONAR_TOKEN` | SonarQube auth token |
+| `SONAR_HOST_URL` | SonarQube host URL (no `STANO_` prefix — read directly by `gradle-plugins-sonar`) |
+| `SONAR_TOKEN` | SonarQube auth token (no `STANO_` prefix — read directly by `gradle-plugins-sonar`) |
 | `STANO_MAVEN_URL` | Private Maven repository URL |
 | `STANO_MAVEN_USERNAME` / `STANO_MAVEN_PASSWORD` | Maven credentials (HTTP Basic auth) |
 | `STANO_MAVEN_TOKEN` / `STANO_MAVEN_TOKEN_HEADER` | Maven credentials (HTTP header auth; takes precedence over username/password; header name defaults to `Private-Token`) |
@@ -47,10 +47,10 @@ Each `gradle-plugins-*` submodule is an independently published Gradle plugin. T
 
 | Plugin ID | Implementation Class | Submodule | Purpose |
 |---|---|---|---|
-| `com.stano.base` | `ProjectPlugin` | `gradle-plugins-base` | Root-project prerequisite. Registers `BaseExtension`, adds `jacocoRootReport`. **Must be applied to the root project before any other stano plugin.** |
+| `com.stano.base` | `BasePlugin` | `gradle-plugins-base` | Root-project prerequisite. Registers `BaseExtension` under the DSL name `root` (not `base`), adds `jacocoRootReport`. **Must be applied to the root project before any other stano plugin.** |
 | `com.stano.application` | `ApplicationPlugin` | `gradle-plugins-application` | Extends `com.stano.base`. Sets `project.version` from `ProjectVersionProvider`, applies `base` and `jacoco` to the root project. |
 | `com.stano.library` | `LibraryPlugin` | `gradle-plugins-library` | Extends `com.stano.base`. Applies `base` and `jacoco` to the root project. For multi-module **library** builds (as opposed to applications). |
-| `com.stano.java` | `JavaPlugin` | `gradle-plugins-java` | Core plugin for internal Java modules. Applies java-library, JaCoCo, Spotless (Eclipse formatter). Validates that `com.stano.base` is already on the root. |
+| `com.stano.java` | `JavaPlugin` | `gradle-plugins-java` | Core plugin for internal Java modules. Applies java-library, JaCoCo, Spotless (Google Java Format). Validates that `com.stano.base` is already on the root. |
 | `com.stano.java-library` | `JavaLibraryPlugin` | `gradle-plugins-java-library` | Extends `com.stano.java`. Adds `javadoc` + sources JARs and Maven publishing. |
 | `com.stano.maven-central-publish` | `MavenCentralPublishPlugin` | `gradle-plugins-maven-central-publish` | Adds Maven Central Portal publishing: POM metadata, GPG signing, a `staging-deploy` publication, and a `publishToMavenCentral` upload task. Composable alongside `com.stano.java-library`'s private-repo publish. All POM/developer/license/component values are set explicitly via the `mavenCentralPublish` extension — no org-wide defaults. |
 | `com.stano.kotlin` | `KotlinPlugin` | `gradle-plugins-kotlin` | Opt-in Kotlin JVM support for Java subprojects. Applies `org.jetbrains.kotlin.jvm`, configures `KotlinCompile` tasks. Requires `com.stano.java` to be applied to the subproject. |

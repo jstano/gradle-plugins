@@ -1,0 +1,14 @@
+{
+  "$schema": "https://context7.com/schema/context7.json",
+  "projectTitle": "Stano Gradle Plugins",
+  "description": "Opinionated Gradle plugins for building Spring Boot applications and libraries with clean architecture, as the build-system companion to the Modular Spring Platform (MSP).",
+  "folders": ["docs"],
+  "excludeFiles": ["session-log.md"],
+  "rules": [
+    "com.stano.settings must be applied first, in settings.gradle.kts, before rootProject.name is set.",
+    "com.stano.base (or a plugin that extends it, like com.stano.application or com.stano.library) must be applied to the root project before any other com.stano.* plugin, or dependent plugins throw a GradleException at apply time.",
+    "The extension registered by com.stano.base is named `root`, not `base` -- configure it in the root build.gradle.kts as `root { javaVersion = \"21\"; mspVersion = \"...\"; contextName = \"...\" }`.",
+    "When both com.stano.java-library and com.stano.maven-central-publish are applied to the same project, only maven-central-publish's `mavenJava` publication is created automatically -- java-library's private-repo publication is skipped to avoid a duplicate-publication coordinate collision.",
+    "Never capture the `docker` extension instance inside a Task action (doFirst/doLast) in com.stano.docker -- it holds a live Project reference and is not configuration-cache-safe. Read resolved values into local variables first."
+  ]
+}
