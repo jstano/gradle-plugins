@@ -28,4 +28,5 @@ dependencies {
   implementation(project(":gradle-plugins-base"))
 
   testImplementation(testFixtures(project(":gradle-plugins-base")))
+  testImplementation(project(":gradle-plugins-maven-central-publish"))
 }
