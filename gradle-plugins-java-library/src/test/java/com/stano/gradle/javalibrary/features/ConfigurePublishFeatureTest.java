@@ -20,7 +20,8 @@ class ConfigurePublishFeatureTest extends BasePluginTest {
   }
 
   @Test
-  void shouldCreateAProjectNamedPublicationWhenStanoMavenUrlIsConfiguredAndMavenCentralPublishIsAbsent() {
+  void
+      shouldCreateAProjectNamedPublicationWhenStanoMavenUrlIsConfiguredAndMavenCentralPublishIsAbsent() {
     childProject.getPluginManager().apply("com.stano.java-library");
     childProject
         .getExtensions()
