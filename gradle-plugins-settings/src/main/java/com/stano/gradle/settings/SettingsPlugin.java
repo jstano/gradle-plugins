@@ -35,7 +35,8 @@ public class SettingsPlugin implements Plugin<Settings> {
                       "com.stano.maven-central-publish",
                       "com.stano.docker",
                       "com.stano.docker-compose",
-                      "com.stano.docker-run")) {
+                      "com.stano.docker-run",
+                      "com.stano.schema")) {
                 plugins.id(id).version(stanoVersion);
               }
               settings.getPluginManagement().getRepositories().gradlePluginPortal();

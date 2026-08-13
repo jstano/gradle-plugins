@@ -1,7 +1,7 @@
 dependencies {
   implementation(project(":gradle-plugins-application"))
   implementation(project(":gradle-plugins-maven-central-publish"))
-//  implementation(project(":gradle-plugins-docker"))
+  implementation(project(":gradle-plugins-docker"))
   implementation(project(":gradle-plugins-java-library"))
   implementation(project(":gradle-plugins-java"))
   implementation(project(":gradle-plugins-kotlin"))
