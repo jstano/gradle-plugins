@@ -56,6 +56,7 @@ Each `gradle-plugins-*` submodule is an independently published Gradle plugin. T
 | `com.stano.kotlin` | `KotlinPlugin` | `gradle-plugins-kotlin` | Opt-in Kotlin JVM support for Java subprojects. Applies `org.jetbrains.kotlin.jvm`, configures `KotlinCompile` tasks. Requires `com.stano.java` to be applied to the subproject. |
 | `com.stano.spring-boot` | `SpringBootPlugin` | `gradle-plugins-spring-boot` | Applies `org.springframework.boot`, pins Spring Boot + MSP BOM, names the boot JAR after the root project, registers a `copyOtelJavaagent` task. |
 | `com.stano.sonar` | `SonarPlugin` | `gradle-plugins-sonar` | SonarQube integration. Silently skips (with a warning) when host/token are unconfigured. |
+| `com.stano.schema` | `SchemaPlugin` | `gradle-plugins-schema` | Adds `generateSchemaDiagram`/`generateSql`/`installSchema` tasks (`JavaExec` wrappers around `GenDiagram`/`GenSQL`/`InstallSchema`) driven by a `schema.xml` file. Each task is only registered when the matching `com.stano:schema-diagram-generator`/`com.stano:schema-sql-generator`/`com.stano:schema-installer-flyway` dependency is already declared on the project's `runtimeClasspath`; otherwise it's silently skipped with a warning. `installSchema` mutates a live database (credentials passed as env vars, not args) and is never wired into `build`/`check`/`test`. |
 | `com.stano.settings` | `SettingsPlugin` | `gradle-plugins-settings` | Settings-level plugin. Configures dependency resolution management, S3 build cache, and pins Kotlin JVM plugin version. |
 | `com.stano.docker` | `DockerPlugin` | `gradle-plugins-docker` | Docker build support. |
 | `com.stano.docker-compose` | `DockerComposePlugin` | `gradle-plugins-docker` | Docker Compose support. |
@@ -109,6 +110,7 @@ Root package: `com.stano.gradle`. Subpackages match the submodule's functional d
 | `com.stano.gradle.kotlin` | `gradle-plugins-kotlin` |
 | `com.stano.gradle.library` | `gradle-plugins-library` |
 | `com.stano.gradle.plugin.test` | `gradle-plugins-test` (deprecated; use testFixtures from gradle-plugins-base) |
+| `com.stano.gradle.schema` | `gradle-plugins-schema` — schema.xml-driven SQL/diagram generation tasks: `SchemaExtension`, `generateSchemaDiagram`/`generateSql` features |
 | `com.stano.gradle.settings` | `gradle-plugins-settings` |
 | `com.stano.gradle.sonar` | `gradle-plugins-sonar` |
 | `com.stano.gradle.springboot` | `gradle-plugins-spring-boot` |

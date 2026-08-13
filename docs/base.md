@@ -42,6 +42,8 @@ root {
 | `javaVersion` | `String` | `"21"` | `javaVersion` project/system property or env `JAVA_VERSION`; a leading non-digit prefix like `jdk-` is stripped | Java toolchain version used by `com.stano.java`/`com.stano.kotlin` |
 | `mspVersion` | `String` | `null` | `mspVersion` project property only (no env fallback) | Version of the internal `com.stano:msp-bom` platform, consumed by `com.stano.java` and `com.stano.spring-boot` |
 | `contextName` | `String` | `rootProject.name` | `contextName` project property only | Logical application/service name, used in Docker image naming and `application.yml` build info |
+| `useNvm` | `boolean` | `false` | `com.stano.use-nvm` project/system property or env | Whether to build via nvm (Node Version Manager) instead of a system-installed npm; consumed by `com.stano.npm` |
+| `defaultNodeVersion` | `String` | `"12"` | `com.stano.default-node-version` project/system property or env | Default Node version, consumed by `com.stano.npm` |
 | `dependencyLocking` | `Boolean` (nullable) | `null` (unset) | `com.stano.dependency-locking` project/system property or env | Tri-state: `null` means "no explicit override" — `com.stano.application` defaults it to `true`, `com.stano.library` defaults it to `false`, but an explicit value here always wins |
 | `buildNumber` | `String` | `null` | `BUILD_NUMBER` project/system property or env | CI build number, folded into `com.stano.application`'s computed version |
 | `buildTime` | `LocalDateTime` | now, `America/Chicago` | computed at apply time | Wall-clock build timestamp |
@@ -56,7 +58,7 @@ root {
 
 `branchNameProvider` resolution order: `CI_COMMIT_BRANCH` (GitLab) → `GITHUB_REF_NAME` (GitHub Actions) → `CHANGE_BRANCH` → `BRANCH_NAME` (Jenkins) → current git HEAD branch → `"main"` as a final fallback.
 
-Two fields exist on `BaseExtension` but are currently dead code and always inert: `useNvm` (always `false`) and `defaultNodeVersion` (always `null`) — their setters are never called by any feature. Don't rely on them.
+`com.stano.npm`'s `NpmExtension.useNvm`/`nodeVersion` properties default from `useNvm`/`defaultNodeVersion` above — the same pattern `assembleOutputPath` uses with `contextName`.
 
 ## What it does under the hood
 

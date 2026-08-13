@@ -30,6 +30,8 @@ public class SettingsPlugin implements Plugin<Settings> {
                       "com.stano.kotlin",
                       "com.stano.spring-boot",
                       "com.stano.sonar",
+                      "com.stano.npm",
+                      "com.stano.npm-resources",
                       "com.stano.maven-central-publish",
                       "com.stano.docker",
                       "com.stano.docker-compose",

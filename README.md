@@ -8,12 +8,12 @@ These plugins are designed for use with the [Modular Spring Platform (MSP)](http
 
 ## Overview
 
-This project publishes 13 Gradle plugins to the Gradle Plugin Portal. The plugins are designed to work together as a cohesive build system:
+This project publishes 16 Gradle plugins to the Gradle Plugin Portal. The plugins are designed to work together as a cohesive build system:
 
 - **Settings-level**: `com.stano.settings` (configures repositories, build cache, plugin versions)
 - **Root project**: `com.stano.base`, `com.stano.application`, `com.stano.library` (set up base infrastructure and versioning)
 - **Subproject**: `com.stano.java`, `com.stano.java-library`, `com.stano.spring-boot`, `com.stano.maven-central-publish` (configure compilers, testing, publishing)
-- **Optional infrastructure**: `com.stano.sonar` (SonarQube), `com.stano.kotlin` (Kotlin JVM support), `com.stano.docker*` (Docker build/run)
+- **Optional infrastructure**: `com.stano.sonar` (SonarQube), `com.stano.kotlin` (Kotlin JVM support), `com.stano.npm` (generic npm/Node build lifecycle, no Java coupling), `com.stano.npm-resources` (embeds an npm build into a Java jar's resources), `com.stano.schema` (schema.xml-driven SQL/diagram generation tasks), `com.stano.docker*` (Docker build/run)
 
 **Plugin dependency hierarchy:**
 
@@ -33,6 +33,9 @@ com.stano.java ← required for Java subprojects
 Optional (any project):
     com.stano.sonar
     com.stano.kotlin (extend java for Kotlin compilation)
+    com.stano.npm (standalone npm/Node build lifecycle, no Java required)
+        └── com.stano.npm-resources (extends npm, embeds output into a Java jar's resources)
+    com.stano.schema (requires java; tasks activate only when their generator dependency is declared)
     com.stano.docker
     com.stano.docker-compose
     com.stano.docker-run
@@ -112,6 +115,9 @@ Full documentation for each plugin — extension properties, tasks, gotchas, and
 | `com.stano.kotlin` | [`docs/kotlin.md`](docs/kotlin.md) |
 | `com.stano.spring-boot` | [`docs/spring-boot.md`](docs/spring-boot.md) |
 | `com.stano.sonar` | [`docs/sonar.md`](docs/sonar.md) |
+| `com.stano.npm` | [`docs/npm.md`](docs/npm.md) |
+| `com.stano.npm-resources` | [`docs/npm-resources.md`](docs/npm-resources.md) |
+| `com.stano.schema` | [`docs/schema.md`](docs/schema.md) |
 | `com.stano.docker` | [`docs/docker.md`](docs/docker.md) |
 | `com.stano.docker-compose` | [`docs/docker-compose.md`](docs/docker-compose.md) |
 | `com.stano.docker-run` | [`docs/docker-run.md`](docs/docker-run.md) |

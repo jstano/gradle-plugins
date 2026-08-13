@@ -60,8 +60,8 @@ public class BaseExtensionFeature implements PluginFeature {
     baseExtension.setDockerRegistryPassword(getDockerRegistryPassword(project));
     baseExtension.setDockerRegistryAwsProfile(getDockerRegistryAwsProfile(project));
     baseExtension.setJavaVersion(getJavaVersion(project));
-    //      baseExtension.setUseNvm(getUseNvm(project));
-    //      baseExtension.setDefaultNodeVersion(getDefaultNodeVersion(project));
+    baseExtension.setUseNvm(getUseNvm(project));
+    baseExtension.setDefaultNodeVersion(getDefaultNodeVersion(project));
     baseExtension.setContextName(getContextName(project));
     baseExtension.setDependencyLocking(getDependencyLocking(project));
     baseExtension.setBuildNumber(getBuildNumber(project));

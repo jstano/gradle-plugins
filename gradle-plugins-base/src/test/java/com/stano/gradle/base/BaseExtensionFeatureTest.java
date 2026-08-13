@@ -58,4 +58,46 @@ class BaseExtensionFeatureTest {
     BaseExtension baseExtension = project.getExtensions().getByType(BaseExtension.class);
     assertEquals(false, baseExtension.getDependencyLocking());
   }
+
+  @Test
+  void useNvmShouldDefaultToFalse() {
+    Project project = ProjectBuilder.builder().build();
+
+    new BaseExtensionFeature().apply(project);
+
+    BaseExtension baseExtension = project.getExtensions().getByType(BaseExtension.class);
+    assertEquals(false, baseExtension.isUseNvm());
+  }
+
+  @Test
+  void settingUseNvmProjectPropertyShouldOverrideTheDefault() {
+    Project project = ProjectBuilder.builder().build();
+    project.getExtensions().getExtraProperties().set("com.stano.use-nvm", "true");
+
+    new BaseExtensionFeature().apply(project);
+
+    BaseExtension baseExtension = project.getExtensions().getByType(BaseExtension.class);
+    assertEquals(true, baseExtension.isUseNvm());
+  }
+
+  @Test
+  void defaultNodeVersionShouldDefaultTo12() {
+    Project project = ProjectBuilder.builder().build();
+
+    new BaseExtensionFeature().apply(project);
+
+    BaseExtension baseExtension = project.getExtensions().getByType(BaseExtension.class);
+    assertEquals("12", baseExtension.getDefaultNodeVersion());
+  }
+
+  @Test
+  void settingDefaultNodeVersionProjectPropertyShouldOverrideTheDefault() {
+    Project project = ProjectBuilder.builder().build();
+    project.getExtensions().getExtraProperties().set("com.stano.default-node-version", "20.11.0");
+
+    new BaseExtensionFeature().apply(project);
+
+    BaseExtension baseExtension = project.getExtensions().getByType(BaseExtension.class);
+    assertEquals("20.11.0", baseExtension.getDefaultNodeVersion());
+  }
 }
