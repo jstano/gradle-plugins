@@ -18,6 +18,7 @@ public class JacocoAggregateFeature {
             "jacocoRootReport",
             JacocoReport.class,
             task -> {
+              task.setGroup("verification");
               ConfigurableFileCollection sourceFiles = project.files();
               ConfigurableFileCollection classFiles = project.files();
               var targets =
@@ -43,6 +44,14 @@ public class JacocoAggregateFeature {
                               }));
               task.getReports().getXml().getRequired().set(true);
               task.getReports().getHtml().getRequired().set(true);
+              task.getReports()
+                  .getXml()
+                  .getOutputLocation()
+                  .set(
+                      project
+                          .getLayout()
+                          .getBuildDirectory()
+                          .file("reports/jacoco/jacocoRootReport/jacocoRootReport.xml"));
             });
   }
 
