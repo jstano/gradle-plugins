@@ -23,8 +23,9 @@ None to apply — it invokes `BasePlugin`'s behavior itself via inheritance, so 
 
 1. Runs everything `com.stano.base` does (registers the `root` extension, applies Spotless anchor + `jacocoRootReport` on root — see [`com.stano.base`](base.md)).
 2. Applies Gradle's built-in `base` and `jacoco` plugins.
-3. **Sets `project.version`** on the root project and propagates the same version object to every subproject.
+3. **Sets `project.version`** on the root project and propagates the same version object to every subproject (see "Computed version" below).
 4. Defaults `root.dependencyLocking` to **`true`** if it hasn't been explicitly set.
+5. **Strips the version segment from every `Jar` task's output filename** (root project and all subprojects) — this includes Spring Boot's `bootJar`, since it extends `Jar`. `build/libs/*.jar` is always `<name>.jar`, never `<name>-<version>.jar`, regardless of what `project.version` resolves to.
 
 No extension of its own — configure the inherited `root` extension (see [`com.stano.base`](base.md)).
 
@@ -37,6 +38,13 @@ The version is a lazy, `Serializable` `ProjectVersionProvider` whose `toString()
 - **No git repository found**: falls back to `root.buildTimeFormatted` (`yyyyMMddHHmmss` in UTC), e.g. `20250615120000`
 
 Because this is computed once and cached, `project.version` is stable for the whole build even though it's derived lazily.
+
+`build/libs/*.jar` filenames themselves stay version-free regardless (see "What it does under the hood" above) — `project.version` is instead consumed by other plugins for traceability:
+
+- **`com.stano.docker`**, when applied alongside this plugin, builds its default image tag directly from `project.version` (`<contextName>/<branch>:<projectVersion>`), and also auto-adds `project.version` as an extra tag — this is how the commit hash/timestamp ends up in the Docker tag.
+- **`com.stano.spring-boot`** writes it into `application.yml` for Actuator's `/info` build-info block.
+- **`com.stano.sonar`** sets `sonar.projectVersion` from it.
+- **`com.stano.java`**'s Pact test support uses it as the provider version.
 
 ## Full example
 

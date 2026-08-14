@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.stano.gradle.base.BaseExtension;
+import org.gradle.api.tasks.bundling.Jar;
 import org.gradle.testfixtures.ProjectBuilder;
 import org.junit.jupiter.api.Test;
 
@@ -17,6 +18,16 @@ class ApplicationPluginTest {
     assertNotNull(rootProject.getExtensions().findByType(BaseExtension.class));
     assertInstanceOf(ProjectVersionProvider.class, rootProject.getVersion());
     assertInstanceOf(ProjectVersionProvider.class, childProject.getVersion());
+  }
+
+  @Test
+  void shouldStripVersionFromJarArchiveFileNamesOnRootAndSubprojects() {
+    var rootProject = ProjectBuilder.builder().withName("root").build();
+    var childProject = ProjectBuilder.builder().withName("child").withParent(rootProject).build();
+    rootProject.getPluginManager().apply("com.stano.application");
+    childProject.getPluginManager().apply("java");
+    var jarTask = (Jar) childProject.getTasks().getByName("jar");
+    assertEquals("", jarTask.getArchiveVersion().getOrNull());
   }
 
   @Test
